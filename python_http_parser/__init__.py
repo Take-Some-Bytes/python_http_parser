@@ -75,6 +75,7 @@ def parse(msg, opts):
       # Malformed header, move on.
       continue
     split_header[0] = trim_and_lower(split_header[0])
+    split_header[1] = split_header[1].strip()
     # For raw headers, we need to put the headers in the same way
     # we received them. Duplicates are not merged.
     raw_headers.append(split_header[0])
