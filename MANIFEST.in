@@ -1,0 +1,14 @@
+include CHANGELOG.rst
+include LICENSE
+include README.rst
+
+include Makefile
+
+include pyproject.toml
+include setup.cfg
+include setup.py
+
+graft tests
+graft docs
+
+global-exclude *.pyc
