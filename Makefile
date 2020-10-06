@@ -17,17 +17,35 @@ ifeq ($(py_ver_ok), 0)
   py = python3
 endif
 
+check:
+	$(py) -m twine check dist/*
 clean:
 	$(py) -m pip uninstall docutils pep517 pytest twine
+clean-build:
+	rm -rf ./build
+	rm -rf ./dist
+	rm -rf ./python_http_parser.egg-info
 init:
 	$(py) -m pip install --upgrade pip
 	$(py) -m pip install docutils pep517 pytest twine
 build:
 	$(py) -m pep517.build .
 upload:
-	$(py) -m twine -r pypi dist/*
+	$(py) -m twine upload -r pypi dist/*
 upload-test:
-	$(py) -m twine -r testpypi dist/*
+	$(py) -m twine upload -r testpypi dist/*
+publish:
+	make init
+	make clean-build
+	make build
+	make check
+	make upload
+publish-test:
+	make init
+	make clean-build
+	make build
+	make check
+	make upload-test
 test:
 	$(py) -m pytest
 
