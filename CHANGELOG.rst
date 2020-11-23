@@ -1,22 +1,50 @@
 ====================================
-``python_http_parser`` CHANGELOG
+ ``python_http_parser`` CHANGELOG
 ====================================
 
 This is the CHANGELOG for ``python_http_parser``. All notable changes will be
 written here.
 
-The format is based on `Keep a Changelog`_,
-and this project adheres to `Semantic Versioning`_.
+The format is based on `Keep a Changelog`_, and this project adheres to `Semantic Versioning`_.
+
+.. Please, ignore the "Duplicate implicit target name" warnings.
+
+--------------------------
+`v0.2.0`_ - 2020-11-21
+--------------------------
+Added:
+============
+- Added aliases for the current package functions (``encode`` for ``parse``)
+- Added more parsing options:
+
+  * ``body_required``: This option really tells the parser whether to ignore
+    the fact that the message may not end with double newlines.
+  * ``normalize_newlines``: This option tells the parser whether to normalize the
+    message's newlines.
+
+Changed:
+============
+- Updated ``README.rst`` with a section on using this project with other versions
+  and/or implementations of Python.
+- Updated section on testing this package in ``README.rst``.
+- Updated documentation to further emphasis which version they're documenting about.
+- Updated the "name" in this project's MIT license.
+- Moved tests that tested the various options for this parsing into ``test_options.py``.
+
+Fixed:
+============
+- Fixed the broken CHANGELOG links that lead to a specific version.
 
 --------------------------
 `v0.1.0`_ - 2020-08-05
 --------------------------
 Added:
 ============
-- The module itself! This is the first release.
-- The documentation (Found in ``/docs``).
-- All metadata files.
+- Added the module itself! This is the first release.
+- Added the documentation (Found in ``/docs``).
+- Added all metadata files.
 
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html
-.. _v0.1.0: https://github.com/Take-Some-Bytes/Colonial-Wars/tree/v0.1.0
+.. _v0.1.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.1.0
+.. _v0.2.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.2.0
