@@ -1,6 +1,6 @@
 ifeq (, $(shell which python))
 	ifeq (, $(shell which python3))
-	$(error "Python executable not found.")
+		$(error "Python executable not found.")
 	endif
 endif
 
@@ -48,5 +48,7 @@ publish-test:
 	make upload-test
 test:
 	$(py) -m pytest
+list:
+	cat Makefile
 
-.PHONY: clean init build upload upload-test test
+.PHONY: clean init build upload upload-test test list
