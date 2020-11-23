@@ -1,9 +1,18 @@
 """
-python_http_parser module.
+``python_http_parser`` module.
 """
 
+# List the public API of this package.
+__all__ = [
+  "encode",
+  "parse"
+]
+# The version...
+__version__ = "0.2.0"
+
 # Imports.
-from .__private import line_break_map, ParsingError, normalize_linebreaks, trim_and_lower
+from .__private import linebreak_map, ParsingError, normalize_linebreaks, trim_and_lower
+
 
 def parse(msg, opts):
   """
@@ -14,7 +23,9 @@ def parse(msg, opts):
     The `opts` parameter should be a `dict`, with the following form:
     ```
     {
-      "received_from": "client request" or "server response"
+      "received_from": "client request" or "server response",
+      "body_required": bool,
+      "normalize_linebreaks": bool
     }
     ```
 
@@ -26,40 +37,58 @@ def parse(msg, opts):
       "uri": str,
       "headers": dict,
       "raw_headers": list,
-      "body": str
+      "body": str or None
     } or {
       "version": str,
       "status_code": str,
       "status_message": str,
       "headers": dict,
       "raw_headers": list,
-      "body": str
+      "body": str or None
     }
     ```
   """
   # Decode the message, if needed. Also determine options.
   msg = msg.decode("utf-8") if type(msg) is bytes else msg
   received_from = opts["received_from"] if "received_from" in opts else None
+  body_required = opts["body_required"] if "body_required" in opts else True
+  convert_to_CRLF = opts["normalize_linebreaks"] if "normalize_linbreaks" in opts else False
   if received_from is None:
     raise TypeError("`received_from` property of the `opts` object is required!")
   # Determine the type of linebreaks that we need to use.
   # Also store the split message, just in case.
   linebreak_type = None
   split_message = None
-  for string in line_break_map.values():
+  tmp_split_msg = None
+  # If we are to normalize linebreaks, do it NOW.
+  if convert_to_CRLF:
+    msg = normalize_linebreaks(msg)
+  for string in linebreak_map.values():
     split_message = msg.split(string + string)
     if len(split_message) == 2:
       linebreak_type = string
       break
+    else:
+      split_message = None
 
-  if (linebreak_type is None) or (split_message is None):
-    raise ParsingError("Failed to split message!")
+  if (type(split_message) is not list) and (body_required is True):
+    raise ParsingError("Failed to split message into body and headers!")
+  elif (type(split_message) is not list) and (body_required is False):
+    for string in linebreak_map.values():
+      tmp_split_msg = msg.split(string)
+      if len(tmp_split_msg) > 0:
+        linebreak_type = string
+        break
+    split_message = [msg, None]
 
   # Now, actually parse the message.
   try:
+    # Body is optional.
     head, body = split_message
   except ValueError:
-    raise ParsingError("Failed to seperate message into headers and body!")
+    raise ParsingError(
+      "Failed to separate message into headers and body!"
+    )
 
   head = head.split(linebreak_type)
   headline = head[0].strip()
@@ -96,7 +125,9 @@ def parse(msg, opts):
     try:
       req_method, req_uri, req_version = split_headline
     except ValueError:
-      raise ParsingError("Failed to parse request headline!")
+      raise ParsingError(
+        "Failed to parse request headline!"
+      )
 
     return {
       "version": req_version,
@@ -110,7 +141,7 @@ def parse(msg, opts):
     try:
       req_version, req_status, req_message = split_headline
     except ValueError:
-      raise ParsingError("Failed to parse request headline!")
+      raise ParsingError("Failed to parse response headline!")
 
     return {
       "version": req_version,
@@ -120,3 +151,6 @@ def parse(msg, opts):
       "raw_headers": raw_headers,
       "body": body
     }
+
+# Aliases for the above functions.
+encode = parse
