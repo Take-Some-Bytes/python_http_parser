@@ -27,5 +27,5 @@ To run the tests, either:
   PyPI or from GitHub. And again, make sure you have ``pytest``, and run ``make test``
   in the project root.
 
-.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/master/docs/README.rst
+.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.2.0/docs/README.rst
 .. _CPython 3.8: https://github.com/python/cpython/tree/v3.8.6
