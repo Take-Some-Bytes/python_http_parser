@@ -18,56 +18,14 @@ def test_parser_optional_body():
     "Upgrade-Insecure-Requests: 1\r\n" + \
     "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36\r\n" + \
     """
-hortoncheng@Charless-iMac colonialwars-current % make dev
-clear&&DEBUG=colonialwars node --inspect server.js
-Debugger listening on ws://127.0.0.1:9229/c8845c1b-dfd7-412a-96d2-63b937975029
-For help, see: https://nodejs.org/en/docs/inspector
-  colonialwars Initializing Colonial Wars web application. +0ms
-  colonialwars Exported and made loggers. +160ms
-  colonialwars Exported and made Game manager. +1ms
-  colonialwars Exported and made JWT and cookie secrets. +0ms
-  colonialwars Exported server cache. +0ms
-  colonialwars Exported and made Socket.IO session storage. +0ms
-  colonialwars Exported and initialized helmet module functions. +1ms
-  colonialwars Registered HTML route handlers. +2ms
-  colonialwars Registered CSP report route, XHR route, and fallback handler. +0ms
-  colonialwars Exported middleware handlers. +1ms
-Sun, 08 Nov 2020 21:15:06 -08:00 [Server_log] info: All modules have been loaded; starting Express and Socket.IO servers.
-  colonialwars Server instances created. +21ms
-  colonialwars Express middleware and handlers have been mounted. +1ms
-Sun, 08 Nov 2020 21:15:06 -08:00 [Server_log] info: Server running on http://localhost:8000.
-^CSun, 08 Nov 2020 21:15:11 -08:00 [Server_log] info: Received signal SIGINT. Shutting down application...
-Sun, 08 Nov 2020 21:15:11 -08:00 [Server_log] info: Server closed successfully. Exiting...
-
-hortoncheng@Charless-iMac colonialwars-current % cd ../colonialwars
-
-hortoncheng@Charless-iMac colonialwars % make dev
-clear&&DEBUG=colonialwars node --inspect server.js
-Debugger listening on ws://127.0.0.1:9229/b8ceabad-4908-4134-87ba-5e637539b42a
-For help, see: https://nodejs.org/en/docs/inspector
-  colonialwars Initializing Colonial Wars web application. +0ms
-  colonialwars Exported utility methods. +218ms
-  colonialwars Frozen and exported constants. +1ms
-  colonialwars Returning console-only transports. +13ms
-  colonialwars Returning 1 transports for logger Server-logger. +0ms
-  colonialwars Returning 1 transports for logger Security-logger. +4ms
-  colonialwars Exported and made winston loggers. +1ms
-  colonialwars Exported and made Game manager. +0ms
-  colonialwars Exported and made JWT and cookie secrets. +0ms
-  colonialwars Exported server cache. +1ms
-  colonialwars Exported and made Socket.IO session storage. +1ms
-  colonialwars Exported and initialized helmet module functions. +0ms
-  colonialwars Registered HTML route handlers. +2ms
-  colonialwars Registered CSP report route, XHR route, and fallback handler. +1ms
-  colonialwars Exported middleware handlers. +0ms
-Colonialwars_server: 2020-11-09T05:15:19.699Z [Server_log] info: All modules have been loaded; starting Express and Socket.IO servers.
-  colonialwars Server instances created. +26ms
-  colonialwars Express middleware and handlers have been mounted. +1ms
-  colonialwars Main Socket.IO namespace handlers have been mounted. +0ms
-  colonialwars Play Socket.IO namespace handlers have been mounted. +0ms
-Colonialwars_server: 2020-11-09T05:15:19.730Z [Server_log] info: Server running on http://localhost:8000.
-^CColonialwars_server: 2020-11-09T05:15:30.887Z [Server_log] info: Received signal SIGINT. Shutting down application...
-Colonialwars_server: 2020-11-09T05:15:30.888Z [Server_log] info: Server closed successfully. Exiting...
+Thers the unworthy to bear them? Thus cast give have, to troubler in the with a we know not of outraveller be,
+or wish'd. To dispriz'd contumely, those bourn awry, this that pith who would by opposing end that makes us all; and
+end ther with and morthy takes consience that man's wrong after devoutly takes, whethere's there's deathe ills wrong afterpriz'd love,
+or in those bodkin? Who would by a country life, or when heary life; and, by opposing ents those inst of dels be: ther respect the have, and
+Who would fard things all; and the undispriz'd cowardelay, to takes turns, whose bodkin? Who would fardelay, the sleep;
+no more; and, by a bare bourn awry, their to beary from who would fardelay, to gream: ay, to be whips againsolence things of time,
+and beart-ache dothe ressor's the shuffled o'er regardelay, thought himself mind the hue of of troubles, whething afterpriz'd lose ills
+weat sleep; nobles, and bear the to be, their currenterpriz'd cowards of there's the proud may coward thought, and sw
 """
   try:
     parsed_msg = python_http_parser.parse(msg_with_body, {
