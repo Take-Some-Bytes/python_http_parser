@@ -1,0 +1,10 @@
+# Ignore all pytest stuff.
+.pytest_cache/
+
+# All build-related directories should not be in Git.
+dist/
+build/
+python_http_parser.egg-info
+
+# Oh, and please no .pyc files.
+**.pyc
