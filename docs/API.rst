@@ -1,5 +1,5 @@
 ==================================================
- ``python_http_parser`` v0.2.0 Documentation
+ ``python_http_parser`` v0.2.1 Documentation
 ==================================================
 
 .. contents:: Table of Contents
@@ -114,7 +114,7 @@ Would be parsed into a |dict|_ like this:
     'body': ''
   }
 
-``python_http_parser.encode(msg, opts)``
+``python_http_parser.decode(msg, opts)``
 ============================================
 Alias for |python_http_parser.parse(msg, opts)|_.
 
