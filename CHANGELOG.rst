@@ -10,6 +10,20 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
 .. Please, ignore the "Duplicate implicit target name" warnings.
 
 --------------------------
+`v0.2.1`_ - 2021-03-03
+--------------------------
+Changed:
+============
+- Stopped using ``TypeVar`` as ``Union`` types.
+
+Fixed:
+============
+- Temporarily fixed the fact that the ``parse`` method dropped any header which
+  had a colon in its value (|1|_).
+- Fixed the fact that the ``parse`` function was aliased as ``encode``... Now it
+  is aliased (correctly) as ``decode``.
+
+--------------------------
 `v0.2.0`_ - 2020-11-21
 --------------------------
 Added:
@@ -44,7 +58,21 @@ Added:
 - Added the documentation (Found in ``/docs``).
 - Added all metadata files.
 
+.. Replacements.
+
+.. |1| replace:: #1
+
+.. Third-party resources.
+
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html
+
+.. Issue numbers links.
+
+.. _1: https://github.com/Take-Some-Bytes/python_http_parser/issues/1
+
+.. Release links.
+
 .. _v0.1.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.1.0
 .. _v0.2.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.2.0
+.. _v0.2.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.2.1
