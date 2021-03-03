@@ -8,8 +8,6 @@ def test_parser_proper():
   parsed_msg = None
   client_msg = \
     "GET /index.html HTTP/1.1\r\n" + \
-    "User-Agent: Bot/v100.0.96\r\n" + \
-    "USER-AGENT: APOIJDSPIOFJKSAPODISJAPDOIJSADPIOJSAPO/111.ca\r\n" + \
     "accept: text/html,application/xhtml+xml,application/xml;q=0.9\r\n" + \
     "accept-encoding: gzip, deflate, br\r\n" + \
     "accept-language: en-US,en;q=0.9\r\n" + \
@@ -27,6 +25,32 @@ def test_parser_proper():
   except Exception as e:
     err = e
   assert err is None
+  print(parsed_msg)
+
+def test_parser_user_agent():
+  # Test with an User Agent field that has more than one colon.
+  err = None
+  parsed_msg = None
+  client_msg = \
+    "GET /index.html HTTP/1.1\r\n" + \
+    "ACCEPT: text/html,application/xhtml+xml,application/xml;q=0.9\r\n" + \
+    "accept-encoding: gzip, deflate, br\r\n" + \
+    "accept-language: en-US,en;q=0.9\r\n" + \
+    "cache-control: no-cache\r\n" + \
+    "pragma: no-cache\r\n" + \
+    "sec-fetch-dest: document\r\n" + \
+    "sec-fetch-mode: navigate\r\n" + \
+    "sec-fetch-site: none\r\n" + \
+    "sec-fetch-user: ?1\r\n" + \
+    "upgrade-insecure-requests: 1\r\n" + \
+    "USER-AGENT: Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0\r\n\r\n"
+
+  try:
+    parsed_msg = python_http_parser.parse(client_msg, { "received_from": "client request" })
+  except Exception as e:
+    err = e
+  assert err is None
+  assert ("user-agent" in parsed_msg["headers"]) and parsed_msg["headers"]["user-agent"] is not None
   print(parsed_msg)
 
 def test_parser_invalid():
