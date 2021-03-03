@@ -4,14 +4,19 @@
 
 # List the public API of this package.
 __all__ = [
-  "encode",
+  "decode",
   "parse"
 ]
 # The version...
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 # Imports.
-from .__private import linebreak_map, ParsingError, normalize_linebreaks, trim_and_lower
+from python_http_parser.__private import (
+  linebreak_map,
+  normalize_linebreaks,
+  trim_and_lower,
+  ParsingError
+)
 
 
 def parse(msg, opts):
@@ -99,7 +104,8 @@ def parse(msg, opts):
   headers = {}
   raw_headers = []
   for hdr in head[1:]:
-    split_header = hdr.split(":")
+    # TODO: Check if the following line is sufficient for splitting valid headers.
+    split_header = hdr.split(":", 1)
     if len(split_header) != 2:
       # Malformed header, move on.
       continue
@@ -153,4 +159,4 @@ def parse(msg, opts):
     }
 
 # Aliases for the above functions.
-encode = parse
+decode = parse
