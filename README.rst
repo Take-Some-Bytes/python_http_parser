@@ -3,7 +3,7 @@
 ========================
 Simple HTTP parser written in pure python.
 
-``python_http_parser`` has only been tested with `CPython 3.8`_–it is *not* guaranteed to
+``python_http_parser`` has only been tested with `CPython 3.8`_--it is *not* guaranteed to
 work with any other versions and/or implementations of Python. You are welcome to
 test this package with other implementations and/or versions of Python, and you may also
 open an issue if you think a compatibility issue between this project and a implementation
@@ -27,5 +27,5 @@ To run the tests, either:
   PyPI or from GitHub. And again, make sure you have ``pytest``, and run ``make test``
   in the project root.
 
-.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.2.0/docs/README.rst
-.. _CPython 3.8: https://github.com/python/cpython/tree/v3.8.6
+.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.2.1/docs/README.rst
+.. _CPython 3.8: https://github.com/python/cpython/tree/3.8
