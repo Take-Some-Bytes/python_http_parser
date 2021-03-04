@@ -8,7 +8,7 @@ __all__ = [
   "parse"
 ]
 # The version...
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 # Imports.
 from python_http_parser.__private import (
@@ -21,6 +21,12 @@ from python_http_parser.__private import (
 
 def parse(msg, opts):
   """
+    New variation of the 'parse' function of the python_http_parser module.
+    Main change is I got rid of the 'lower()' instances, to keep the packet as it was.
+    These next changes are marked along the function with comments:
+    First, changed the encoding to latin-1.
+    Changes 2 and 3 fix the 'Malformed Header' bug.
+    ***
     Parses a HTTP message.
 
     The `msg` parameter should be the actual HTTP message, either a
@@ -54,7 +60,7 @@ def parse(msg, opts):
     ```
   """
   # Decode the message, if needed. Also determine options.
-  msg = msg.decode("utf-8") if type(msg) is bytes else msg
+  msg = msg.decode("latin-1") if type(msg) is bytes else msg  # Changed to latin-1 for more extended encoding
   received_from = opts["received_from"] if "received_from" in opts else None
   body_required = opts["body_required"] if "body_required" in opts else True
   convert_to_CRLF = opts["normalize_linebreaks"] if "normalize_linbreaks" in opts else False
@@ -104,27 +110,26 @@ def parse(msg, opts):
   headers = {}
   raw_headers = []
   for hdr in head[1:]:
-    # TODO: Check if the following line is sufficient for splitting valid headers.
-    split_header = hdr.split(":", 1)
-    if len(split_header) != 2:
+    split_header = hdr.split(":")
+    if len(split_header) < 2:  # Change 2
       # Malformed header, move on.
       continue
-    split_header[0] = trim_and_lower(split_header[0])
-    split_header[1] = split_header[1].strip()
+    split_header[0] = (split_header[0]).strip()
+    split_header[1] = hdr[hdr.find(": ") + 2:]  # Change 3
     # For raw headers, we need to put the headers in the same way
     # we received them. Duplicates are not merged.
     raw_headers.append(split_header[0])
     raw_headers.append(split_header[1])
-    if split_header[0].lower() in headers:
+    if split_header[0] in headers:
       # Header key already exists, append to that one.
       header_val = headers[split_header[0]]
       if type(header_val) is list:
-        headers[split_header[0].lower()].append(split_header[1])
+        headers[split_header[0]].append(split_header[1])
       else:
         old_val = header_val
-        headers[split_header[0].lower()] = [old_val, split_header[1]]
+        headers[split_header[0]] = [old_val, split_header[1]]
     else:
-      headers[split_header[0].lower()] = split_header[1]
+      headers[split_header[0]] = split_header[1]
 
   split_headline = headline.split(" ")
   if received_from == "client request":
