@@ -1,11 +1,16 @@
 name: run-tests
 
-
 on:
   push:
-    branches: [ $default-branch ]
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
   pull_request:
-    branches: [ $default-branch ]
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
 
 jobs:
   lint:
