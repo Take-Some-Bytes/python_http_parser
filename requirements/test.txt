@@ -1,0 +1,2 @@
+# Packages you'll need to test this project.
+pytest>=6.2.2
