@@ -13,7 +13,29 @@ on:
       - 'docs/**'
 
 jobs:
-  lint:
+  # 1: We gotta lint both the rst and code.
+  lint-rst:
+    name: RstCheck linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get repo.
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install python@latest
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install rstcheck
+      - name: Lint RST
+        run: |
+          python -m rstcheck ./**.rst
+          python -m rstcheck ./docs/**.rst
+  lint-code:
     name: PyLint linting
     runs-on: ubuntu-latest
 
@@ -37,12 +59,13 @@ jobs:
 
   test:
     if: always()
-    name: PyTest testing
-    runs-on: ubuntu-latest
+    name: PyTest testing on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     needs: lint
     # We'll need to do some matrix stuff with this.
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         # Only test on Python 3.5+ for now.
         python-version: [
           3.5,
