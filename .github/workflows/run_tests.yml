@@ -10,6 +10,7 @@ on:
       - [ $default-branch ]
     paths-ignore:
       - 'docs/**'
+
 jobs:
   lint:
     name: PyLint linting
