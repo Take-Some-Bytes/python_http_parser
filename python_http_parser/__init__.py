@@ -4,159 +4,106 @@
 
 # List the public API of this package.
 __all__ = [
-  "decode",
-  "parse"
+    'decode',
+    'parse'
 ]
 # The version...
-__version__ = "0.2.1"
+__version__ = '0.3.0'
 
 # Imports.
-from python_http_parser.__private import (
-  linebreak_map,
-  normalize_linebreaks,
-  trim_and_lower,
-  ParsingError
-)
+import python_http_parser.constants as constants
+import python_http_parser.errors as errors
+import python_http_parser.utils as utils
 
 
-def parse(msg, opts):
-  """
-    Parses a HTTP message.
+def parse(msg, strictness_level=constants.PARSER_NORMAL, is_response=False):
+    """Parse the specified message.
 
-    The `msg` parameter should be the actual HTTP message, either a
-    `str` or some `bytes`.
-    The `opts` parameter should be a `dict`, with the following form:
+    Arguments:\n
+    ``msg`` -- The HTTP message to parse. Must be ``bytes``, a ``bytearray``, or
+    a ``str``.\n
+    ``strictness_level`` -- How strict to be while parsing. Must be 1, 2, or 3
+    (``constants.PARSER_LENIENT``, ``constants.PARSER_NORMAL``, ``constants.PARSER_STRICT``).
+
+    Returns:
     ```
     {
-      "received_from": "client request" or "server response",
-      "body_required": bool,
-      "normalize_linebreaks": bool
+      # The following 4 fields are either None or their specified type depending
+      # on whether the message was a response or request message.
+      'status_code': Optional[int],
+      'status_msg': Optional[str],
+      'req_method': Optional[str],
+      'req_uri': Optional[str],
+      'http_ver': float, # The HTTP version (e.g. 1.1, 1.0...)
+      # Dictionary of headers that were received.
+      # Duplicates are concatenated into a list.
+      'headers': Dict[str, Union[str, list]],
+      'raw_headers': List[str], # The headers just as was received.
+      # If we encountered double newlines, the characters after those double
+      # newlines, if any.
+      'body': Optional[str]
     }
     ```
+    """
+    msg = msg.decode('utf-8') if isinstance(msg, (bytes, bytearray)) else msg  # type: str
+    newline_type = ''
+    output = {
+        'status_code': None,
+        'status_msg': None,
+        'req_method': None,
+        'req_uri': None,
+        'http_ver': None,
+        'headers': {},
+        'raw_headers': [],
+        'body': None
+    }
 
-    This function returns a `dict`, with the following format:
-    ```
-    {
-      "version": str,
-      "method": str,
-      "uri": str,
-      "headers": dict,
-      "raw_headers": list,
-      "body": str or None
-    } or {
-      "version": str,
-      "status_code": str,
-      "status_message": str,
-      "headers": dict,
-      "raw_headers": list,
-      "body": str or None
-    }
-    ```
-  """
-  # Decode the message, if needed. Also determine options.
-  msg = msg.decode("utf-8") if type(msg) is bytes else msg
-  received_from = opts["received_from"] if "received_from" in opts else None
-  body_required = opts["body_required"] if "body_required" in opts else True
-  convert_to_CRLF = opts["normalize_linebreaks"] if "normalize_linbreaks" in opts else False
-  if received_from is None:
-    raise TypeError("`received_from` property of the `opts` object is required!")
-  # Determine the type of linebreaks that we need to use.
-  # Also store the split message, just in case.
-  linebreak_type = None
-  split_message = None
-  tmp_split_msg = None
-  # If we are to normalize linebreaks, do it NOW.
-  if convert_to_CRLF:
-    msg = normalize_linebreaks(msg)
-  for string in linebreak_map.values():
-    split_message = msg.split(string + string)
-    if len(split_message) == 2:
-      linebreak_type = string
-      break
+    # Get the first line and the newline type.
+    newline_type = utils.get_newline_type(msg)
+
+    # PARSER_STRICT does not allow LF.
+    if newline_type != '\r\n' and strictness_level == constants.PARSER_STRICT:
+        raise TypeError('Invalid line breaks! Expected CRLF, received LF.')
+
+    start_line = msg[:msg.find(newline_type)]
+    # Remove the start line from memory.
+    msg = msg[msg.find(newline_type):]
+    if not start_line:
+        # Leading line break detected. Ignore.
+        # There might also be other line breaks, so keep looking for a line
+        # that is NOT empty.
+        while not start_line:
+            msg = msg[msg.find(newline_type):]
+            start_line = msg[:msg.find(newline_type)]
+
+    if is_response:
+        ver, status, status_msg = utils.parse_status_line(start_line)
+        output['status_code'] = int(status)
+        output['status_msg'] = status_msg
+        output['http_ver'] = float(ver)
     else:
-      split_message = None
+        method, uri, ver = utils.parse_request_line(start_line)
+        output['req_uri'] = uri
+        output['req_method'] = method
+        output['http_ver'] = float(ver)
 
-  if (type(split_message) is not list) and (body_required is True):
-    raise ParsingError("Failed to split message into body and headers!")
-  elif (type(split_message) is not list) and (body_required is False):
-    for string in linebreak_map.values():
-      tmp_split_msg = msg.split(string)
-      if len(tmp_split_msg) > 0:
-        linebreak_type = string
-        break
-    split_message = [msg, None]
+    # Find the double newline.
+    double_newline = msg.find(newline_type + newline_type)
+    if not bool(~double_newline):
+        raise errors.FatalParsingError('Missing double newline!')
 
-  # Now, actually parse the message.
-  try:
-    # Body is optional.
-    head, body = split_message
-  except ValueError:
-    raise ParsingError(
-      "Failed to separate message into headers and body!"
+    # Now, split the message.
+    head = msg[:double_newline]
+    body = msg[double_newline + len(newline_type + newline_type):]
+    output['body'] = body
+
+    # Get headers.
+    output['raw_headers'], output['headers'] = utils.get_headers(
+        head, newline_type, strictness_level
     )
 
-  head = head.split(linebreak_type)
-  headline = head[0].strip()
-  if not headline:
-    raise ParsingError("Failed to get HTTP message headline!")
-  # Get headers. We do this because there could be duplicate headers, and even
-  # those are important.
-  headers = {}
-  raw_headers = []
-  for hdr in head[1:]:
-    # TODO: Check if the following line is sufficient for splitting valid headers.
-    split_header = hdr.split(":", 1)
-    if len(split_header) != 2:
-      # Malformed header, move on.
-      continue
-    split_header[0] = trim_and_lower(split_header[0])
-    split_header[1] = split_header[1].strip()
-    # For raw headers, we need to put the headers in the same way
-    # we received them. Duplicates are not merged.
-    raw_headers.append(split_header[0])
-    raw_headers.append(split_header[1])
-    if split_header[0].lower() in headers:
-      # Header key already exists, append to that one.
-      header_val = headers[split_header[0]]
-      if type(header_val) is list:
-        headers[split_header[0].lower()].append(split_header[1])
-      else:
-        old_val = header_val
-        headers[split_header[0].lower()] = [old_val, split_header[1]]
-    else:
-      headers[split_header[0].lower()] = split_header[1]
+    return output
 
-  split_headline = headline.split(" ")
-  if received_from == "client request":
-    try:
-      req_method, req_uri, req_version = split_headline
-    except ValueError:
-      raise ParsingError(
-        "Failed to parse request headline!"
-      )
-
-    return {
-      "version": req_version,
-      "method": req_method,
-      "uri": req_uri,
-      "headers": headers,
-      "raw_headers": raw_headers,
-      "body": body
-    }
-  elif received_from == "server response":
-    try:
-      req_version, req_status, req_message = split_headline
-    except ValueError:
-      raise ParsingError("Failed to parse response headline!")
-
-    return {
-      "version": req_version,
-      "status_code": req_status,
-      "status_message": req_message,
-      "headers": headers,
-      "raw_headers": raw_headers,
-      "body": body
-    }
 
 # Aliases for the above functions.
 decode = parse
