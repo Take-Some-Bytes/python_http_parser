@@ -19,16 +19,16 @@ endif
 check:
 	$(py) -m twine check dist/*
 clean:
-	$(py) -m pip uninstall docutils pep517 pytest twine
+	$(py) -m pip uninstall docutils build pytest
 clean-build:
 	rm -rf ./build
 	rm -rf ./dist
 	rm -rf ./python_http_parser.egg-info
 init:
 	$(py) -m pip install --upgrade pip
-	$(py) -m pip install docutils pep517 pytest twine pylint
+	$(py) -m pip install docutils build pytest
 build:
-	$(py) -m pep517.build .
+	$(py) -m build
 upload:
 	$(py) -m twine upload -r pypi dist/*
 upload-test:
