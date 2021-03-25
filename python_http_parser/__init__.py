@@ -2,7 +2,7 @@
 ``python_http_parser`` module.
 """
 
-# List the public API of this package.
+# List the public API of this module.
 __all__ = [
     'decode',
     'parse'

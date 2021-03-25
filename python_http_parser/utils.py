@@ -3,8 +3,13 @@
 """
 
 __all__ = [
+    'parse_http_version',
+    'parse_http_status',
+    'get_newline_type',
+    'get_headers',
+    'parse_status_line',
+    'parse_request_line',
     'parse_header_line',
-    'parse_http_version'
 ]
 
 import re
@@ -105,7 +110,7 @@ def parse_status_line(string):
 
 def parse_request_line(string):
     """Parse a HTTP request line and return the HTTP method, URI, and version as a list."""
-    if re.match(constants.HTTP_STATUS_REQUEST_REGEX, string, flags=re.ASCII):
+    if re.match(constants.HTTP_REQUEST_LINE_REGEX, string, flags=re.ASCII):
         split = string.split(' ')
         if len(split) == 3:
             split[2] = split[2][5:]

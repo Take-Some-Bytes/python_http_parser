@@ -1,7 +1,9 @@
 """Error classes that are raised by ``python_http_parser"""
 __all__ = [
     'LengthError',
-    'ParsingError'
+    'ParsingError',
+    'FatalParsingError',
+    'InvalidStructureError'
 ]
 
 
