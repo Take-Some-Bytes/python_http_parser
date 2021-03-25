@@ -7,7 +7,45 @@ written here.
 
 The format is based on `Keep a Changelog`_, and this project adheres to `Semantic Versioning`_.
 
-.. Please, ignore the "Duplicate implicit target name" warnings.
+--------------------------
+`v0.3.0`_ - 2021-03-24
+--------------------------
+Added:
+============
+- Added three new modules in the package:
+
+  * ``constants``, with constants that are used throughout the package;
+  * ``errors``, with errors and exceptions that this package raises; and
+  * ``utils``, with lots of utility functions that are used to help parse HTTP messages;
+
+- Added new options to replace the old ones:
+
+  * ``strictness_level``: configure the parser strictness level. Details could be found here_.
+  * ``is_response``: tell the parser whether the message is a HTTP response.
+
+- Added more `errors and exceptions`_ that could be raised by this package.
+- Added a draft of package contribution guidelines.
+- Added new and improved tests.
+- Added GitHub workflows to automatically lint and test code changes are pushed.
+
+Changed:
+============
+- Completely restructured package documentation:
+
+  * ``main.rst`` houses the main API documentation.
+  * ``errors.rst`` houses the documentation for package error classes.
+  * ``constants.rst`` houses the documentation for package constants.
+
+Fixed
+============
+- Fixed dependency listing in ``setup.py`` and ``setup.cfg``.
+
+Removed:
+============
+- Removed all old tests.
+- Removed all parsing options that was added in previous versions.
+- Removed ``__private.py`` package--the stuff inside was refactored into
+  other modules.
 
 --------------------------
 `v0.2.1`_ - 2021-03-03
@@ -76,3 +114,8 @@ Added:
 .. _v0.1.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.1.0
 .. _v0.2.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.2.0
 .. _v0.2.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.2.1
+
+.. Other links.
+
+.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.0/docs/constants.rst#parser-strictness-constants
+.. _`errors and exceptions`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.0/docs/errors.rst
