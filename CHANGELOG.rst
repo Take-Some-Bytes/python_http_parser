@@ -114,6 +114,7 @@ Added:
 .. _v0.1.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.1.0
 .. _v0.2.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.2.0
 .. _v0.2.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.2.1
+.. _v0.3.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.3.0
 
 .. Other links.
 
