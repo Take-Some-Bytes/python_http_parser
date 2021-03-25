@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip -r requirements/linting.txt
+          python -m pip install -r requirements/linting.txt
       - name: Lint RST
         run: |
           python -m rstcheck ./**.rst
@@ -67,6 +67,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest
+          python -m pip install -r requirements/test.txt
       - name: Run tests
         run: python -m pytest
