@@ -7,7 +7,9 @@ include Makefile
 include pyproject.toml
 include setup.cfg
 include setup.py
+include .rstcheck.cfg
 
+graft requirements
 graft tests
 graft docs
 
