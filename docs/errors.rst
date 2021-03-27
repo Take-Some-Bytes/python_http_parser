@@ -1,5 +1,5 @@
 ===========================================================
- Errors Documentation for ``python_http_parser`` v0.3.0
+ Errors Documentation for ``python_http_parser`` v0.3.1
 ===========================================================
 
 .. contents:: Table of Contents

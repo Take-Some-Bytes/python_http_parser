@@ -1,5 +1,5 @@
 ==========================================================
- Main API Documentation for ``python_http_parser`` v0.3.0
+ Main API Documentation for ``python_http_parser`` v0.3.1
 ==========================================================
 
 .. contents:: Table of Contents
@@ -85,5 +85,5 @@ Alias for |python_http_parser.parse(msg, strictness_level, is_response)|_.
 .. _dict: https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
 .. _bool: https://docs.python.org/3/library/stdtypes.html#bltin-boolean-values
 
-.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.0/docs/constants.rst#parser-strictness-constants
-.. _`errors documentation`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.0/docs/errors.rst
+.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.1/docs/constants.rst#parser-strictness-constants
+.. _`errors documentation`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.1/docs/errors.rst
