@@ -8,7 +8,7 @@ written here.
 The format is based on `Keep a Changelog`_, and this project adheres to `Semantic Versioning`_.
 
 --------------------------
-`v0.3.1`_ - 2021-03-24
+`v0.3.1`_ - 2021-03-26
 --------------------------
 Changed:
 ============
