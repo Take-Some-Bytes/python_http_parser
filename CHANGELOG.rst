@@ -8,6 +8,14 @@ written here.
 The format is based on `Keep a Changelog`_, and this project adheres to `Semantic Versioning`_.
 
 --------------------------
+`v0.3.1`_ - 2021-03-24
+--------------------------
+Changed:
+============
+- Minor changes to the documentation.
+- Updated ``CONTRIBUTING.rst`` a bit
+
+--------------------------
 `v0.3.0`_ - 2021-03-24
 --------------------------
 Added:
@@ -115,8 +123,9 @@ Added:
 .. _v0.2.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.2.0
 .. _v0.2.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.2.1
 .. _v0.3.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.3.0
+.. _v0.3.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.3.1
 
 .. Other links.
 
-.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.0/docs/constants.rst#parser-strictness-constants
-.. _`errors and exceptions`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.0/docs/errors.rst
+.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.1/docs/constants.rst#parser-strictness-constants
+.. _`errors and exceptions`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.1/docs/errors.rst

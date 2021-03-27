@@ -56,6 +56,6 @@ tools if you wish to develop or test the code--those requirements could be found
 
 .. _`CONTRIBUTING.rst`: https://github.com/Take-Some-Bytes/python_http_parser/blob/main/CONTRIBUTING.rst
 .. _`CHANGELOG`: https://github.com/Take-Some-Bytes/python_http_parser/blob/main/CHANGELOG.rst
-.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.0/docs/README.rst
+.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.1/docs/README.rst
 
 .. _`RFC 7230`: https://tools.ietf.org/html/rfc7230
