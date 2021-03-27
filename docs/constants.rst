@@ -42,7 +42,7 @@ Parser Strictness Constants
   ``PARSER_LENIENT`` will skip any header lines which match the last two criteria.
   This constant is equivalent to the |int|_ 1.
 - ``PARSER_NORMAL``: This constant will tell the parser to parse a message with
-  strictness. ``PARSER_NORMAL`` will allow messages which:
+  normal strictness. ``PARSER_NORMAL`` will allow messages which:
 
   * Do not use CRLF;
   * Uses empty header lines;

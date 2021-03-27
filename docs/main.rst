@@ -38,14 +38,13 @@ More information about the strictness levels can be found here_.
 
 This function could raise:
 
-- ``python_http_parser.errors.LengthError``, when something length-related fails (
-  i.e. a header line is too short).
-- ``python_http_parser.errors.ParsingError``, when parsing just... fails (this error
-  will probably be replaced by other, more specific exceptions in the long term).
-- ``python_http_parser.errors.FatalParsingError``, when parsing failed and CANNOT GO ON.
-- ``python_http_parser.errors.InvalidStructureError``, when a something does not conform
-  to a specific structure (i.e. the request line uses an invalid structure).
+- ``python_http_parser.errors.LengthError``.
+- ``python_http_parser.errors.ParsingError``.
+- ``python_http_parser.errors.FatalParsingError``.
+- ``python_http_parser.errors.InvalidStructureError``.
 - ``TypeError``, when the message's newline type is not CRLF (only happens in strict mode).
+
+Refer to our `errors documentation`_ to find out what each of those errors mean.
 
 Returns a |dict|_ with the following structure.
 
@@ -86,4 +85,5 @@ Alias for |python_http_parser.parse(msg, strictness_level, is_response)|_.
 .. _dict: https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
 .. _bool: https://docs.python.org/3/library/stdtypes.html#bltin-boolean-values
 
-.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.0/docs/constants.rst#severity-levels
+.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.0/docs/constants.rst#parser-strictness-constants
+.. _`errors documentation`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.0/docs/errors.rst

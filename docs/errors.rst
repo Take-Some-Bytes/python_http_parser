@@ -47,7 +47,7 @@ classes in the long term.
 ``FatalParsingError``
 =======================
 ``python_http_parser.errors.FatalParsingError`` is a fatal variation of ``ParsingError``;
-all ``FatalParsingError`` s raised cannot be ignored.
+``FatalParsingError`` s raised cannot be ignored.
 
 ``InvalidStructureError``
 ===========================
