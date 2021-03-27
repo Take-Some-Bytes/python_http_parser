@@ -25,6 +25,8 @@ but if you have ample justification, your feature request will probably be imple
 ---------------
 - If you're submitting a pull request for a bug, make sure the bug doesn't already have
   a PR linked already, and that no one else is assigned to it.
+- Please make sure you add an entry in the CHANGELOG before you submit your pull request,
+  and make sure your entry uses the same style as the rest of the CHANGELOG.
 - Please use ``autopep8`` to format your code.
 
 Thank you for your contribution!
