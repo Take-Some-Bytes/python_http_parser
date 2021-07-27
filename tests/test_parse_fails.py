@@ -23,7 +23,8 @@ def test_fail_lf_linebreaks():
     except Exception as ex:
         err = ex
 
-    assert err is not None and isinstance(err, TypeError)
+    assert err is not None and isinstance(err,
+        python_http_parser.errors.NewlineError)
     assert result is None
 
 
@@ -86,5 +87,5 @@ X-Missing-Double-Newline: 1
         err = ex
 
     assert err is not None and isinstance(
-        err, python_http_parser.errors.FatalParsingError)
+        err, python_http_parser.errors.NewlineError)
     assert result is None
