@@ -1,0 +1,108 @@
+#!/usr/bin/env sh
+
+# Scripts.
+script_check () {
+    echo "> python -m twine check dist/*"
+    python -m twine check dist/* >&1
+    return $?
+}
+script_build () {
+    echo "> python -m build -s -w -o ./dist"
+    python -m build -s -w -o ./dist >&1
+    return $?
+}
+script_upload () {
+    echo "> python -m twine upload -r pypi dist/*"
+    python -m twine upload -r pypi dist/* >&1
+    return $?
+}
+script_test () {
+    echo "> python -m pytest"
+    python -m pytest
+    return $?
+}
+script_lint () {
+    echo "> python -m pylint ./tests"
+    python -m pylint ./tests >&1
+    echo "> python -m pylint ./python_http_parser"
+    python -m pylint ./python_http_parser >&1
+    echo "> python -m rstcheck ./**.rst"
+    python -m rstcheck ./**.rst
+    echo "> python -m rstcheck ./docs/**.rst"
+    python -m rstcheck ./docs/**.rst
+    return $?
+}
+script_bench () {
+    # Shift to remove script name from parameters.
+    shift
+    echo "> python ./bench/run.py -t bench $@"
+    python ./bench/run.py -t bench "$@"
+    return $?
+}
+script_profile () {
+    # Shift to remove script name from parameters.
+    shift
+    echo "> python ./bench/run.py -t profile $@"
+    python ./bench/run.py -t profile "$@"
+    return $?
+}
+
+script_names=(check build upload lint "test" bench profile)
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <scriptname>" >&2
+    echo >&2
+    echo "  <scriptname>: The name of the script to run." >&2
+    echo "  Available scripts:" >&2
+    for name in "${script_names[@]}"; do
+        echo "      $name," >&2
+    done
+    exit 1
+fi
+
+case "$1" in
+    # Script check.
+    "${script_names[0]}")
+        script_check
+        exit $?
+        ;;
+    # Script build.
+    "${script_names[1]}")
+        script_build
+        exit $?
+        ;;
+    # Script upload.
+    "${script_names[2]}")
+        script_upload
+        exit $?
+        ;;
+    # Script lint.
+    "${script_names[3]}")
+        script_lint
+        exit $?
+        ;;
+    # Script test.
+    "${script_names[4]}")
+        script_test
+        exit $?
+        ;;
+    # Script bench.
+    "${script_names[5]}")
+        script_bench "$@"
+        exit $?
+        ;;
+    # Script profile.
+    "${script_names[6]}")
+        script_profile "$@"
+        exit $?
+        ;;
+    # Unrecognized script.
+    *)
+        echo "Unrecognized script $1." >&2
+        echo "Available scripts:" >&2
+        for name in "${script_names[@]}"; do
+            echo "  $name," >&2
+        done
+        exit 1
+        ;;
+esac
