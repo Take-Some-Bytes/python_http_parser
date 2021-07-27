@@ -3,35 +3,59 @@
 """
 
 __all__ = [
-    'parse_http_version',
-    'parse_http_status',
+    'split_msg',
     'get_newline_type',
     'get_headers',
     'parse_status_line',
     'parse_request_line',
     'parse_header_line',
 ]
-
+import collections
 import re
 
-import python_http_parser.constants as constants
-import python_http_parser.errors as errors
+from . import constants, errors
+
+SplitMessage = collections.namedtuple('SplitRequest', ['head', 'body'])
+RequestLine = collections.namedtuple(
+    'RequestLine', ['method', 'uri', 'version']
+)
+StatusLine = collections.namedtuple('StatusLine', ['version', 'code', 'msg'])
+ConsumedData = collections.namedtuple('ConsumedData', ['data', 'leftovers'])
+ParsedHeaders = collections.namedtuple(
+    'ParsedHeaders', ['raw_headers', 'headers']
+)
 
 
-def parse_http_version(string):
-    """Parse a HTTP version and return it as a float. Raises TypeError if string is invalid."""
-    if string.lower().strip()[:5] == 'http/':
-        return float(string[5:])
+def split_msg(msg, newline_type):
+    """Split a HTTP message and return the head and body in a list."""
+    double_newline = msg.find(newline_type + newline_type)
+    if not bool(~double_newline):
+        raise errors.NewlineError('Missing double newline!')
 
-    raise TypeError('Invalid HTTP version string!')
+    return SplitMessage(
+        head=msg[:double_newline],
+        body=msg[double_newline+len(newline_type + newline_type):]
+    )
 
 
-def parse_http_status(string):
-    """Parse a HTTP status code and return it as an int. Raises TypeError if string is invalid."""
-    if re.fullmatch(constants.HTTP_STATUS_REGEX, string, flags=re.ASCII):
-        return int(string)
+def get_start_line(msg, newline_type):
+    """Get the start line of a HTTP message.
 
-    raise TypeError('Invalid HTTP status code!')
+    Return a ConsumedData namedtuple with the start line in the 'data'
+    property and the remaining message in the 'leftovers' property.
+    """
+    start_line = msg[:msg.find(newline_type)]
+    # Remove the start line from the request string.
+    msg = msg[msg.find(newline_type):]
+    if not start_line:
+        # Leading blank line detected. Ignore.
+        # There might also be other blank lines, so keep looking for a line
+        # that is NOT blank.
+        while not start_line:
+            msg = msg[msg.find(newline_type):]
+            start_line = msg[:msg.find(newline_type)]
+
+    return ConsumedData(start_line, msg)
 
 
 def get_newline_type(msg):
@@ -39,7 +63,7 @@ def get_newline_type(msg):
     # Get the first line and the newline type.
     newline_index = msg.find('\n')
     if not bool(~newline_index):
-        raise errors.FatalParsingError('No newlines found!')
+        raise errors.NewlineError('No newlines found!')
 
     # Next, check if we have to deal with CRLF.
     if msg[newline_index - 1] == '\r':
@@ -86,7 +110,7 @@ def get_headers(head, newline_type, strictness):
         else:
             headers[parsed['name']] = parsed['value']
 
-    return [raw_headers, headers]
+    return ParsedHeaders(raw_headers, headers)
 
 
 def parse_status_line(string):
@@ -94,14 +118,14 @@ def parse_status_line(string):
     Parse a HTTP status line and return the HTTP version, status code, and status message as a list.
     """
     if re.match(constants.HTTP_STATUS_LINE_REGEX, string, flags=re.ASCII):
-        return [
+        return StatusLine(
             # HTTP version.
-            string[5:8],
+            float(string[5:8]),
             # HTTP status code.
-            string[9:12],
+            int(string[9:12]),
             # Rest is HTTP status message.
             string[13:]
-        ]
+        )
 
     raise errors.InvalidStructureError(
         'Structure of status line is invalid!'
@@ -113,8 +137,8 @@ def parse_request_line(string):
     if re.match(constants.HTTP_REQUEST_LINE_REGEX, string, flags=re.ASCII):
         split = string.split(' ')
         if len(split) == 3:
-            split[2] = split[2][5:]
-            return split
+            split[2] = float(split[2][5:])
+            return RequestLine(*split)
 
     raise errors.InvalidStructureError(
         'Structure of request line is invalid!'
