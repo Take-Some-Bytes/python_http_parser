@@ -34,6 +34,8 @@ jobs:
         run: |
           python -m rstcheck ./**.rst
           python -m rstcheck ./docs/**.rst
+      - name: Lint code
+        run: |
           python -m pylint ./python_http_parser
           python -m pylint ./tests
 
