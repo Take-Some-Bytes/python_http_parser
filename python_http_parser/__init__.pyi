@@ -7,10 +7,9 @@ __all__ = [
 ]
 
 # Imports
-from typing import Dict, List, Optional, Union, TypedDict
+from typing import Dict, List, Optional, TypedDict, Union
 
 import python_http_parser.constants as constants
-
 
 class ParsedHTTPMessage(TypedDict):
     status_code: Optional[int]
@@ -28,5 +27,6 @@ def parse(
     strictness_level: int = constants.PARSER_NORMAL,
     is_response: bool = False
 ) -> ParsedHTTPMessage: ...
+
 
 decode = parse

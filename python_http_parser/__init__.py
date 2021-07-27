@@ -5,15 +5,14 @@
 # List the public API of this module.
 __all__ = [
     'decode',
-    'parse'
+    'parse',
 ]
+
 # The version...
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 # Imports.
-import python_http_parser.constants as constants
-import python_http_parser.errors as errors
-import python_http_parser.utils as utils
+from . import constants, errors, utils
 
 
 def parse(msg, strictness_level=constants.PARSER_NORMAL, is_response=False):
@@ -45,7 +44,9 @@ def parse(msg, strictness_level=constants.PARSER_NORMAL, is_response=False):
     }
     ```
     """
-    msg = msg.decode('utf-8') if isinstance(msg, (bytes, bytearray)) else msg  # type: str
+    msg = msg.decode('utf-8') if isinstance(
+        msg, (bytes, bytearray)
+    ) else msg  # type: str
     newline_type = ''
     output = {
         'status_code': None,
@@ -63,39 +64,20 @@ def parse(msg, strictness_level=constants.PARSER_NORMAL, is_response=False):
 
     # PARSER_STRICT does not allow LF.
     if newline_type != '\r\n' and strictness_level == constants.PARSER_STRICT:
-        raise TypeError('Invalid line breaks! Expected CRLF, received LF.')
+        raise errors.NewlineError(
+            'Invalid line breaks! Expected CRLF, received LF.')
 
-    start_line = msg[:msg.find(newline_type)]
-    # Remove the start line from memory.
-    msg = msg[msg.find(newline_type):]
-    if not start_line:
-        # Leading line break detected. Ignore.
-        # There might also be other line breaks, so keep looking for a line
-        # that is NOT empty.
-        while not start_line:
-            msg = msg[msg.find(newline_type):]
-            start_line = msg[:msg.find(newline_type)]
+    start_line, msg = utils.get_start_line(msg, newline_type)
 
     if is_response:
-        ver, status, status_msg = utils.parse_status_line(start_line)
-        output['status_code'] = int(status)
-        output['status_msg'] = status_msg
-        output['http_ver'] = float(ver)
+        output['http_ver'], output['status_code'], output['status_msg'] = \
+            utils.parse_status_line(start_line)
     else:
-        method, uri, ver = utils.parse_request_line(start_line)
-        output['req_uri'] = uri
-        output['req_method'] = method
-        output['http_ver'] = float(ver)
+        output['req_method'], output['req_uri'], output['http_ver'] = \
+            utils.parse_request_line(start_line)
 
-    # Find the double newline.
-    double_newline = msg.find(newline_type + newline_type)
-    if not bool(~double_newline):
-        raise errors.FatalParsingError('Missing double newline!')
-
-    # Now, split the message.
-    head = msg[:double_newline]
-    body = msg[double_newline + len(newline_type + newline_type):]
-    output['body'] = body
+    # Find the double newline and split the message.
+    head, output['body'] = utils.split_msg(msg, newline_type)
 
     # Get headers.
     output['raw_headers'], output['headers'] = utils.get_headers(
