@@ -7,11 +7,12 @@ Simple HTTP parser written in pure python.
 that comply to `RFC 7230`_.
 
 This package is currently *not stable*. Before upgrading on releases, please check our
-CHANGELOG_ for what changed and what you need to change.
+CHANGELOG_ for what changed and what you need to change. Using this package for production
+is highly discouraged.
 
---------------
- Basic Usage
---------------
+------------------------
+ Basic Functional Usage
+------------------------
 
 .. code:: python
 
@@ -54,8 +55,10 @@ package, no external dependencies are installed. That said, this project *does* 
 tools if you wish to develop or test the code--those requirements could be found in the
 ``/requirements`` folder.
 
+Python >=3.6 is required to use this package.
+
 .. _`CONTRIBUTING.rst`: https://github.com/Take-Some-Bytes/python_http_parser/blob/main/CONTRIBUTING.rst
 .. _`CHANGELOG`: https://github.com/Take-Some-Bytes/python_http_parser/blob/main/CHANGELOG.rst
-.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.3.1/docs/README.rst
+.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/README.rst
 
 .. _`RFC 7230`: https://tools.ietf.org/html/rfc7230
