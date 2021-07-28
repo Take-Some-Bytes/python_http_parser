@@ -24,7 +24,7 @@ jobs:
           python -m pip install -r requirements/build.txt
       - name: Build Project
         run: |
-          ./script-run build
+          sh -c ./script-run build
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
