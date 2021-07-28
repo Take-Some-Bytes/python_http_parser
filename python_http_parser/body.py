@@ -13,21 +13,27 @@ __all__ = [
 ]
 
 from abc import ABC, abstractmethod
-from typing import Callable, List, Optional, Tuple, TypedDict
+from typing import Callable, List, Optional, Tuple
+
+try:
+    from typing import TypedDict
+
+    class BodyProcessorCallbacks(TypedDict):
+        """
+        Typed dictionary of all the callbacks that could be registered in a BodyProcessor.
+        """
+        error: Callable[[Exception], None]
+        data: Callable[[bytes], None]
+        finished: Callable[[], None]
+except ImportError:
+    from typing import Mapping
+    # TypedDict is not available below Python 3.8
+    BodyProcessorCallbacks = Mapping[str, Callable]
 
 from . import bytedata, constants, errors
 from .helpers.newline import find_newline, is_newline
 
 _SEMI = 0x3b
-
-
-class BodyProcessorCallbacks(TypedDict):
-    """
-    Typed dictionary of all the callbacks that could be registered in a BodyProcessor.
-    """
-    error: Callable[[Exception], None]
-    data: Callable[[bytes], None]
-    finished: Callable[[], None]
 
 
 class BodyProcessor(ABC):

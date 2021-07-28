@@ -3,17 +3,15 @@ The ``python_http_parser.bytedata`` module is an internal module that provides
 utilities for working with binary data (i.e. bytes).
 """
 
-from __future__ import annotations
-
 __all__ = [
     'Bytes',
 ]
 
 from collections.abc import Iterator, Sized
-from typing import Optional, Union
+from typing import Optional, Union, Iterator as TypingIterator
 
 
-class Bytes(Iterator[int], Sized):
+class Bytes(Iterator, Sized):
     """An object wrapping a plain bytes object."""
 
     def __init__(self, data: bytes) -> None:
@@ -38,7 +36,7 @@ class Bytes(Iterator[int], Sized):
     def __len__(self) -> int:
         return self.data_len - self.start
 
-    def __iter__(self) -> Iterator[int]:
+    def __iter__(self) -> TypingIterator[int]:
         return self
 
     def __next__(self) -> int:
@@ -66,7 +64,7 @@ class Bytes(Iterator[int], Sized):
         except IndexError:
             return None
 
-    def bump(self) -> Bytes:
+    def bump(self) -> 'Bytes':
         """Bump the position of this Bytes object by 1.
 
         Does not perform bounds-checking. Returns this Bytes object
@@ -76,7 +74,7 @@ class Bytes(Iterator[int], Sized):
         self.start += 1
         return self
 
-    def advance(self, amount: int) -> Bytes:
+    def advance(self, amount: int) -> 'Bytes':
         """Advance the position of this Bytes object by ``amount``.
 
         Does not perform bounds-checking. Returns this Bytes object
