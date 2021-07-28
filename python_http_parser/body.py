@@ -16,6 +16,7 @@ from abc import ABC, abstractmethod
 from typing import Callable, List, Optional, Tuple
 
 try:
+    # pylint: disable=too-few-public-methods
     from typing import TypedDict
 
     class BodyProcessorCallbacks(TypedDict):

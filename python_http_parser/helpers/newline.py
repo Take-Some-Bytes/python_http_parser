@@ -4,7 +4,6 @@ from typing import Optional, Union
 
 try:
     from typing import Literal
-    Literal = Literal
 except ImportError:
     # Welp, too bad.
     Literal = Union
@@ -18,7 +17,7 @@ LF = b'\n'
 CRLF = b'\r\n'
 
 
-def find_newline(_bytes: bytes, newline_type: Union['LF', 'CRLF']) -> int:
+def find_newline(_bytes: bytes, newline_type: Literal['LF', 'CRLF']) -> int:
     """
     Look for the specified newline in ``_bytes``. Return the index where
     it is found, or -1 if the newline could not be found. Will throw an erro
@@ -48,7 +47,7 @@ def find_newline(_bytes: bytes, newline_type: Union['LF', 'CRLF']) -> int:
         return -1
     return cr_index
 
-def is_newline(buf: bytedata.Bytes, newline_type: Union['LF', 'CRLF']) -> Optional[bool]:
+def is_newline(buf: bytedata.Bytes, newline_type: Literal['LF', 'CRLF']) -> Optional[bool]:
     """Is the next byte or two of ``buf`` a newline?
 
     Return None if there weren't enough bytes.
