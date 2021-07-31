@@ -2,7 +2,9 @@
 ``utils`` module with utility parsing functions.
 """
 
-from typing import List, Literal, NamedTuple, TypedDict, Union
+from typing import List, NamedTuple, Union
+# Compatibility reasons.
+from typing_extensions import Literal, TypedDict
 
 class ParsedHeaderLine(TypedDict):
     name: str

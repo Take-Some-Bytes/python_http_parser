@@ -6,8 +6,9 @@ __all__ = [
     'parse'
 ]
 
-# Imports
-from typing import Dict, List, Optional, TypedDict, Union
+from typing import Dict, List, Optional, Union
+# For compatiblity with Python<3.8
+from typing_extensions import TypedDict
 
 import python_http_parser.constants as constants
 
