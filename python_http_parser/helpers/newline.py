@@ -1,23 +1,25 @@
 """Newline-related helper functions."""
-
-from typing import Optional, Union
-
-try:
-    from typing import Literal
-except ImportError:
-    # Welp, too bad.
-    Literal = Union
+from typing import Optional, Union, Sized
+# Use typing_extensions to maintain compatibility.
+from typing_extensions import Literal, SupportsIndex, Protocol
 
 from .. import bytedata, errors
 
 _LF = 0x0a
 _CR = 0x0d
 
-LF = b'\n'
-CRLF = b'\r\n'
+class HasFind(Sized, Protocol):
+    """A type that has a .find() method."""
+    # pylint: disable=abstract-method,missing-function-docstring,too-few-public-methods
+
+    def find(
+        self, __sub: Union[bytes, int],
+        __start: Optional[SupportsIndex] = ...,
+        __end: Optional[SupportsIndex] = ...
+    ) -> int: ...
 
 
-def find_newline(_bytes: bytes, newline_type: Literal['LF', 'CRLF']) -> int:
+def find_newline(_bytes: HasFind, newline_type: Literal[b'\n', b'\r\n']) -> int:
     """
     Look for the specified newline in ``_bytes``. Return the index where
     it is found, or -1 if the newline could not be found. Will throw an erro
@@ -47,7 +49,7 @@ def find_newline(_bytes: bytes, newline_type: Literal['LF', 'CRLF']) -> int:
         return -1
     return cr_index
 
-def is_newline(buf: bytedata.Bytes, newline_type: Literal['LF', 'CRLF']) -> Optional[bool]:
+def is_newline(buf: bytedata.Bytes, newline_type: Literal[b'\n', b'\r\n']) -> Optional[bool]:
     """Is the next byte or two of ``buf`` a newline?
 
     Return None if there weren't enough bytes.
