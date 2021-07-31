@@ -32,6 +32,11 @@ script_lint () {
     python -m rstcheck ./docs/**.rst
     return $?
 }
+script_typecheck () {
+    echo "> python -m mypy ."
+    python -m mypy .
+    return $?
+}
 script_bench () {
     # Shift to remove script name from parameters.
     shift
@@ -47,7 +52,7 @@ script_profile () {
     return $?
 }
 
-script_names=(check build upload lint "test" bench profile)
+script_names=(check build upload lint "test" bench profile typecheck)
 
 if [ -z "$1" ]; then
     echo "Usage: $0 <scriptname>" >&2
@@ -94,6 +99,11 @@ case "$1" in
     # Script profile.
     "${script_names[6]}")
         script_profile "$@"
+        exit $?
+        ;;
+    # Script typecheck.
+    "${script_names[7]}")
+        script_typecheck
         exit $?
         ;;
     # Unrecognized script.
