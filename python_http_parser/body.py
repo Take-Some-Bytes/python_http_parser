@@ -14,25 +14,21 @@ __all__ = [
 
 from abc import ABC, abstractmethod
 from typing import Callable, List, Optional, Tuple
-
-try:
-    # pylint: disable=too-few-public-methods
-    from typing import TypedDict
-
-    class BodyProcessorCallbacks(TypedDict):
-        """
-        Typed dictionary of all the callbacks that could be registered in a BodyProcessor.
-        """
-        error: Callable[[Exception], None]
-        data: Callable[[bytes], None]
-        finished: Callable[[], None]
-except ImportError:
-    from typing import Mapping
-    # TypedDict is not available below Python 3.8
-    BodyProcessorCallbacks = Mapping[str, Callable]
+# Compatibility requires us to use typing_extensions.
+from typing_extensions import TypedDict
 
 from . import bytedata, constants, errors
 from .helpers.newline import find_newline, is_newline
+
+
+class BodyProcessorCallbacks(TypedDict):
+    """
+    Typed dictionary of all the callbacks that could be registered in a BodyProcessor.
+    """
+    error: Callable[[Exception], None]
+    data: Callable[[bytes], None]
+    finished: Callable[[], None]
+
 
 _SEMI = 0x3b
 
@@ -157,7 +153,7 @@ class ChunkedProcessor(BodyProcessor):
         self.finished = False
         self.had_error = False
         # None means no chunk is expected.
-        self.next_chunk_size = None
+        self.next_chunk_size: Optional[int] = None
         self.expecting_extensions = False
         self.extensions: List[str] = []
 
@@ -200,6 +196,10 @@ class ChunkedProcessor(BodyProcessor):
         None is returned if there is not enough data.
         """
         nprocessed = 0
+        if self.next_chunk_size is None:
+            # What.
+            raise TypeError('Trying to parse chunk when size is None')
+
         if len(buf) < self.next_chunk_size:
             # Not enough data.
             return None
