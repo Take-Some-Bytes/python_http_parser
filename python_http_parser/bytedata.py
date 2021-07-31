@@ -9,6 +9,8 @@ __all__ = [
 
 from collections.abc import Iterator, Sized
 from typing import Optional, Union, Iterator as TypingIterator
+# For compatibility with Python<3.8
+from typing_extensions import SupportsIndex
 
 
 class Bytes(Iterator, Sized):
@@ -102,7 +104,12 @@ class Bytes(Iterator, Sized):
 
         return head
 
-    def find(self, sub: Union[bytes, int]):
+    # This function is only like this to satisfy the ``HasFind`` Protocol.
+    def find(
+        self, sub: Union[bytes, int],
+        _s: Optional[SupportsIndex] = None,
+        _e: Optional[SupportsIndex] = None
+    ):
         """Return the lowest index where ``sub`` is found.
 
         ``start`` represents the offset which to start searching.
