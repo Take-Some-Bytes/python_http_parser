@@ -1,3 +1,4 @@
-# Packages to use for linting this project's code and RST.
+# Packages to use for linting/typechecking this project's code and RST.
 pylint>=2.7.2
 rstcheck>=3.3.1
+mypy>=0.910
