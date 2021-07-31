@@ -1,7 +1,15 @@
 # Packages you'll need to develop this project.
 # If you use python_http_parser as a production dependency,
 # you won't need any of this.
+
+# We need stuff to lint code.
+-r linting.txt
+
+# We need testing tools.
+-r test.txt
+
+# And we need build tools.
+-r build.txt
+
+# Lastly, docutils for documentation!
 docutils>=0.16
-pylint>=2.7.2
-pytest>=6.2.2
-rstcheck>=3.3.1
