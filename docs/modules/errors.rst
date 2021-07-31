@@ -30,6 +30,7 @@ EHEADERVAL        InvalidHeaderVal
 ECHUNK            InvalidChunk
 ECHUNKSIZE        InvalidChunkSize
 ECHUNKEXTS        InvalidChunkExtensions
+EBODYPROCESSOR    BodyProcessorRequired
 ================ ========================
 
 ~~~~~~~~~~~~~~~~~
@@ -122,12 +123,19 @@ Raised when chunk extensions are too large.
 As the |ChunkedProcessor|_ does not *parse* chunk extensions, this error is only raised the
 size of chunk extensions exceed the maximum_.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ``BodyProcessorRequired``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Raised when a |BodyProcessor|_ is required, but none was set.
+
 .. Hack to make sure putting a hyphen before a hyperlink doesn't break anything.
 .. |HTTP token| replace:: HTTP token
 .. |HTTPParser| replace:: ``HTTPParser``
+.. |BodyProcessor| replace:: ``BodyProcessor``
 .. |ChunkedProcessor| replace:: ``ChunkedProcessor``
 
 .. _HTTPParser: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/stream.rst
+.. _BodyProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/body.rst
 .. _ChunkedProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/body.rst#class-chunkedprocessor
 .. _maximum: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/constants.rst#max_chunk_extension_size
 

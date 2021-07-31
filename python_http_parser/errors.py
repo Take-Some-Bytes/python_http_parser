@@ -177,3 +177,13 @@ class InvalidChunkExtensions(Exception):
         super().__init__(*args)
 
         self.code = 'ECHUNKEXTS'
+
+
+class BodyProcessorRequired(Exception):
+    """Body Processor required but none set."""
+
+    def __init__(self, *args):
+        """Body Processor required but none set."""
+        super().__init__(*args)
+
+        self.code = 'EBODYPROCESSOR'
