@@ -12,7 +12,7 @@ reqs = [REQ, REQ_LONG, REQ_SHORT]
 reses = [RES, RES_LONG, RES_SHORT]
 
 
-def bench(fn_name: str) -> Tuple[int, int]:
+def bench(fn_name: str) -> Tuple[float, float]:
     """Benchmark the supplied function."""
     result = timeit.timeit(
         fn_name, globals=globals(), number=100_000
