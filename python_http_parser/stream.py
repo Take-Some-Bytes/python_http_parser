@@ -9,7 +9,7 @@ __all__ = [
 
 import string
 from collections import namedtuple
-from typing import Iterator, Optional, Tuple
+from typing import Any, Iterator, Optional, Tuple
 
 from . import body, bytedata, constants, errors
 from .constants import ParserState, ParserStrictness
@@ -42,7 +42,7 @@ class HTTPParser(EventEmitter):
         self.is_response = is_response
 
         self._has_body = False
-        self._body_processor = None
+        self._body_processor: Optional[body.BodyProcessor] = None
         self._state = ParserState.EMPTY
 
     def _error(self, err: Exception) -> None:
@@ -146,6 +146,7 @@ class HTTPParser(EventEmitter):
         # PyLint's limit.
         # pylint: disable=too-many-return-statements
         allow_lf = self.strictness != ParserStrictness.STRICT
+        result: Any = None
 
         nparsed = 0
         if self._state is ParserState.PARSING_VERSION:
@@ -318,6 +319,9 @@ class HTTPParser(EventEmitter):
                 self._state = ParserState.DONE
 
         if self._state is ParserState.PROCESSING_BODY:
+            if self._body_processor is None:
+                raise errors.BodyProcessorRequired()
+
             ret = self._body_processor.process(
                 buf.as_bytes(), self.strictness != ParserStrictness.STRICT
             )
@@ -342,7 +346,7 @@ class HTTPParser(EventEmitter):
 
     def body_processor(
         self, body_processor: body.BodyProcessor = None
-    ) -> body.BodyProcessor:
+    ) -> Optional[body.BodyProcessor]:
         """Get or set the body processor this parser is going to use."""
         if body_processor is not None:
             self._body_processor = body_processor
@@ -394,7 +398,7 @@ class HTTPParser(EventEmitter):
         except (errors.InvalidVersion, errors.NewlineError,
                 errors.UnexpectedChar, errors.InvalidStatus,
                 errors.InvalidToken, errors.InvalidURI,
-                errors.InvalidHeaderVal) as ex:
+                errors.InvalidHeaderVal, errors.BodyProcessorRequired) as ex:
             self._error(ex)
             return -1
 
@@ -452,7 +456,7 @@ def _parse_version(buf: bytedata.Bytes) -> Optional[Tuple[int, int]]:
 
     if not next_8.startswith(_HTTP_VER_START):
         raise errors.InvalidVersion(
-            'Expected HTTP version start, received {}'.format(
+            'Expected HTTP version start, received {!r}'.format(
                 next_8[:7]
             ))
 
@@ -462,8 +466,8 @@ def _parse_version(buf: bytedata.Bytes) -> Optional[Tuple[int, int]]:
 
     if last_byte not in (_DIGITS[0], _DIGITS[1]):
         raise errors.InvalidVersion(
-            'Expected 0 or 1 for HTTP minor version, received {}'.format(
-                bytes([last_byte]).decode('utf-8')
+            'Expected 0 or 1 for HTTP minor version, received {!r}'.format(
+                bytes([last_byte])
             ))
 
     return (1, int(bytes([last_byte])))
