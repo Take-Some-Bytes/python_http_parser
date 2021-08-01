@@ -8,6 +8,27 @@ written here.
 The format is based on `Keep a Changelog`_, and this project adheres to `Semantic Versioning`_.
 
 ------------------------
+ `v0.4.1`_ - 2021-07-31
+------------------------
+
+~~~~~~~~
+ Added:
+~~~~~~~~
+- Added new |BodyProcessorRequired-041|_ error that will be raised when a |BodyProcessor-041|_ is
+  required but none was set.
+- Added |typing_extensions|_ as a dependency to maintain compatiblity with Python<3.8.
+- **PROJECT MAINTAINERS**: Added |mypy|_ as a linting requirement to typecheck code. |mypy|_ is
+  *not* a production dependency.
+
+~~~~~~~~
+ Fixed:
+~~~~~~~~
+- Running |mypy|_ on the project now works. Fixes |3|_.
+
+  - Types which are not available in the |typing|_ module in earlier versions of Python (<3.8)
+    will now be imported from |typing_extensions|_.
+
+------------------------
  `v0.4.0`_ - 2021-07-27
 ------------------------
 
@@ -167,20 +188,32 @@ Removed:
 .. Replacements.
 
 .. |1| replace:: #1
+.. |3| replace:: #3
 
+.. |mypy| replace:: ``mypy``
+.. |typing| replace:: ``typing``
 .. |parse()| replace:: ``parse()``
 .. |HTTPParser| replace:: ``HTTPParser``
 .. |EventEmitter| replace:: ``EventEmitter``
 .. |NewlineError| replace:: ``NewlineError``
+.. |BodyProcessor| replace:: ``BodyProcessor``
+.. |typing_extensions| replace:: ``typing_extensions``
+
+.. |BodyProcessor-041| replace:: ``BodyProcessor``
+.. |BodyProcessorRequired-041| replace:: ``BodyProcessorRequired``
 
 .. Third-party resources.
 
+.. _mypy: https://pypi.org/project/mypy/
+.. _typing: https://docs.python.org/3/library/typing.html
+.. _typing_extensions: https://pypi.org/project/typing_extensions/
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html
 
 .. Issue numbers links.
 
 .. _1: https://github.com/Take-Some-Bytes/python_http_parser/issues/1
+.. _3: https://github.com/Take-Some-Bytes/python_http_parser/issues/3
 
 .. Release links.
 
@@ -190,8 +223,12 @@ Removed:
 .. _v0.3.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.3.0
 .. _v0.3.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.3.1
 .. _v0.4.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.4.0
+.. _v0.4.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.4.0
 
 .. Other links.
+.. Version v0.4.1 links.
+.. _BodyProcessor-041: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/body.rst
+.. _BodyProcessorRequired-041: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/errors.rst#bodyprocesorrequired
 
 .. _EventEmitter: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/helpers/events.rst
 .. _HTTPParser: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/stream.rst
@@ -202,4 +239,5 @@ Removed:
 .. _`constants`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/constants.rst
 .. _NewlineError: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/errors.rst#newlineerror
 .. _`namedtuples`: https://docs.python.org/3/library/collections.html#collections.namedtuple
+.. _BodyProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/body.rst
 .. _parse(): https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/index.rst#parsemsg-strictness_level-is_response
