@@ -1,7 +1,7 @@
 ==========================
  Helper module ``events``
 ==========================
-Version v0.4.0.
+Version v0.4.1.
 
 The internal ``events`` module provides a custom EventEmitter implementation.
 This module is not public, and the only reason this is documented is because users
@@ -70,7 +70,7 @@ Return all listeners listening for ``event``.
 .. |EventEmitter| replace:: ``EventEmitter``
 
 .. _EventEmitter: #class-eventemitter
-.. _HTTPParser: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/stream.rst#class-httpparser
+.. _HTTPParser: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/stream.rst#class-httpparser
 
 .. _str: https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str
 .. _Callable: https://docs.python.org/3/library/typing.html#callable

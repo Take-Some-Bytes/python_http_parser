@@ -1,7 +1,7 @@
 ======================================
  Module ``python_http_parser.stream``
 ======================================
-Version v0.4.0.
+Version v0.4.1.
 
 The ``python_http_parser.stream`` module contains classes for incremental processing
 of HTTP messages, namely, the |HTTPParser|_ class.
@@ -232,8 +232,8 @@ Example with basic buffering using |bytearray|_ and |memoryview|_.
 .. _bytes: https://docs.python.org/3/library/stdtypes.html#bytes
 .. _bytearray: https://docs.python.org/3/library/stdtypes.html#bytearray-objects
 .. _memoryview: https://docs.python.org/3/library/stdtypes.html#memoryview
-.. _BodyProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/body.rst#base-class-bodyprocessor
+.. _BodyProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/body.rst#base-class-bodyprocessor
 .. _namedtuple: https://docs.python.org/3/library/collections.html#collections.namedtuple
 .. _Exception: https://docs.python.org/3/library/exceptions.html#Exception
-.. _EventEmitter: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/helpers/events.rst#class-eventemitter
-.. _ParserStrictness: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/constants.rst#parser-strictness-constants
+.. _EventEmitter: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/helpers/events.rst#class-eventemitter
+.. _ParserStrictness: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/constants.rst#parser-strictness-constants

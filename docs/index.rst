@@ -1,7 +1,7 @@
 ================================
  Package ``python_http_parser``
 ================================
-Version v0.4.0.
+Version v0.4.1.
 
 The ``python_http_parser`` package provides classes and functions for parsing HTTP
 messages. This package aims to provide a usable, performant (in terms of Python)
@@ -73,12 +73,12 @@ Returns a |dict|_ with the following structure.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Alias for |parse(msg, strictness_level, is_response)|_.
 
-.. _`body`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/body.rst
-.. _`constants`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/constants.rst
-.. _`errors`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/errors.rst
-.. _`stream`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/stream.rst
+.. _`body`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/body.rst
+.. _`constants`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/constants.rst
+.. _`errors`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/errors.rst
+.. _`stream`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/stream.rst
 
-.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/constants.rst#parser-strictness-constants
+.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/constants.rst#parser-strictness-constants
 
 .. |int| replace:: ``<int>``
 .. |str| replace:: ``<str>``

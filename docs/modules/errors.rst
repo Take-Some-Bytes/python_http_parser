@@ -1,7 +1,7 @@
 ======================================
  Module ``python_http_parser.errors``
 ======================================
-Version v0.4.0.
+Version v0.4.1.
 
 The ``python_http_parser.errors`` module houses various errors this module could raise.
 
@@ -134,9 +134,9 @@ Raised when a |BodyProcessor|_ is required, but none was set.
 .. |BodyProcessor| replace:: ``BodyProcessor``
 .. |ChunkedProcessor| replace:: ``ChunkedProcessor``
 
-.. _HTTPParser: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/stream.rst
-.. _BodyProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/body.rst
-.. _ChunkedProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/body.rst#class-chunkedprocessor
-.. _maximum: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/constants.rst#max_chunk_extension_size
+.. _HTTPParser: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/stream.rst
+.. _BodyProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/body.rst
+.. _ChunkedProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/body.rst#class-chunkedprocessor
+.. _maximum: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/constants.rst#max_chunk_extension_size
 
 .. _`HTTP token`: https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6
