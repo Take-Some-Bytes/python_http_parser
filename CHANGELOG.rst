@@ -7,6 +7,16 @@ written here.
 
 The format is based on `Keep a Changelog`_, and this project adheres to `Semantic Versioning`_.
 
+------------
+ Unreleased
+------------
+
+~~~~~~~~~~
+ Changed:
+~~~~~~~~~~
+- Replaced ``script-run`` with a ``Makefile``. GnuMake is available on both Windows and \*nix
+  systems, while \*nix styled shell script is not.
+
 ------------------------
  `v0.4.1`_ - 2021-07-31
 ------------------------
