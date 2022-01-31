@@ -16,6 +16,7 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
 ~~~~~~~~~~
 - Replaced ``script-run`` with a ``Makefile``. GnuMake is available on both Windows and \*nix
   systems, while \*nix styled shell script is not.
+- Used f-strings_ instead of ``str.format`` where string formatting is required.
 
 ------------------------
  `v0.4.1`_ - 2021-07-31
@@ -214,6 +215,7 @@ Removed:
 
 .. Third-party resources.
 
+.. _f-strings: https://www.python.org/dev/peps/pep-0498/
 .. _mypy: https://pypi.org/project/mypy/
 .. _typing: https://docs.python.org/3/library/typing.html
 .. _typing_extensions: https://pypi.org/project/typing_extensions/
