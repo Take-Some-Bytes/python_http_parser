@@ -30,8 +30,8 @@ X-Token: Trash::more_trash::bananas
 
     assert len(errors) == 0
     assert parser.finished()
-    assert results['req_method'] == 'GET'
-    assert results['req_uri'] == '/index.html'
+    assert results['req_method'] == b'GET'
+    assert results['req_uri'] == b'/index.html'
     assert results['http_version'] == (1, 1)
     assert len(results['raw_headers']) == 6
 
@@ -65,8 +65,8 @@ Accept: text/*
 
     assert len(errors) == 0
     assert parser.finished()
-    assert results['req_method'] == 'GET'
-    assert results['req_uri'] == '/more-newlines.html'
+    assert results['req_method'] == b'GET'
+    assert results['req_uri'] == b'/more-newlines.html'
     assert results['http_version'] == (1, 1)
     assert len(results['raw_headers']) == 6
 
@@ -98,8 +98,8 @@ X-Token: Trash::more_trash::bananas
 
     assert len(errors) == 0
     assert parser.finished()
-    assert results['req_method'] == 'GET'
-    assert results['req_uri'] == '/index.html'
+    assert results['req_method'] == b'GET'
+    assert results['req_uri'] == b'/index.html'
     assert results['http_version'] == (1, 1)
     assert len(results['raw_headers']) == 6
 
@@ -133,7 +133,7 @@ X-CSRF-Token: d637346c70aef677458de33c363104dc71e71133b2b0ff999206ec439d3c2b5f
     assert parser.finished()
     assert results['http_version'] == (1, 1)
     assert results['status_code'] == 200
-    assert results['reason'] == 'OK'
+    assert results['reason'] == b'OK'
     assert len(results['raw_headers']) == 6
 
 
@@ -167,7 +167,7 @@ Date: Sat, 05 Jun 2021 22:56:51 GMT
     assert parser.finished()
     assert results['http_version'] == (1, 1)
     assert results['status_code'] == 200
-    assert results['reason'] == ''
+    assert results['reason'] == b''
     assert len(results['raw_headers']) == 6
 
 def test_chunked_res():
@@ -199,7 +199,7 @@ def test_chunked_res():
     assert parser.finished()
     assert results['http_version'] == (1, 1)
     assert results['status_code'] == 200
-    assert results['reason'] == 'OK'
+    assert results['reason'] == b'OK'
     assert len(results['raw_headers']) == 6
 
 def test_reset():
