@@ -415,9 +415,7 @@ def _expect(byte: int, byte_iter: Iterator[int]) -> bool:
         return False
     if next_byte != byte:
         raise errors.UnexpectedChar(
-            'Expected char "{}", received {}'.format(
-                chr(byte), chr(next_byte)
-            ))
+            f'Expected char "{chr(byte)}", received {chr(next_byte)}')
 
     return True
 
@@ -456,9 +454,7 @@ def _parse_version(buf: bytedata.Bytes) -> Optional[Tuple[int, int]]:
 
     if not next_8.startswith(_HTTP_VER_START):
         raise errors.InvalidVersion(
-            'Expected HTTP version start, received {!r}'.format(
-                next_8[:7]
-            ))
+            f'Expected HTTP version start, received {next_8[:7]!r}')
 
     # It's time for the last byte.
     # We only accept 0 (HTTP/1.0) and 1 (HTTP/1.1).
@@ -466,9 +462,8 @@ def _parse_version(buf: bytedata.Bytes) -> Optional[Tuple[int, int]]:
 
     if last_byte not in (_DIGITS[0], _DIGITS[1]):
         raise errors.InvalidVersion(
-            'Expected 0 or 1 for HTTP minor version, received {!r}'.format(
-                bytes([last_byte])
-            ))
+            f'Expected 0 or 1 for HTTP minor version, received {bytes([last_byte])!r}'
+        )
 
     return (1, int(bytes([last_byte])))
 
@@ -524,7 +519,7 @@ def _recv_uri(buf: bytedata.Bytes) -> Optional[Tuple[str, int]]:
     nparsed = space_index + 1
     if nparsed > constants.MAX_URI_LEN:
         raise errors.InvalidURI(
-            'Exceeded max URI method length of {}'.format(constants.MAX_URI_LEN))
+            f'Exceeded max URI method length of {constants.MAX_URI_LEN}')
 
     # +1 to consume the space as well
     buf.advance(space_index + 1)
@@ -560,9 +555,7 @@ def _recv_method(buf: bytedata.Bytes) -> Optional[Tuple[str, int]]:
     nparsed += space_index + 1
     if nparsed > constants.MAX_REQ_METHOD_LEN:
         raise errors.InvalidToken(
-            'Exceeded max request method length of {}'.format(
-                constants.MAX_REQ_METHOD_LEN
-            ))
+            f'Exceeded max request method length of {constants.MAX_REQ_METHOD_LEN}')
 
     # +1 to include the space, and then .strip to ignore it.
     buf.advance(space_index + 1)

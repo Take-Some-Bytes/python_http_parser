@@ -36,13 +36,13 @@ def run(
 ):
     """Run the benchmarks."""
     if req:
-        print('Parsing request num {} with HTTPParser 100_000 times.'.format(req_num))
-        bench_req_result = bench('bench_req_parsing({})'.format(req_num))
-        print('Parsing total time: {}s'.format(bench_req_result[0]))
-        print('Parsing avg time: {}s'.format(bench_req_result[1]))
+        print(f'Parsing request num {req_num} with HTTPParser 100_000 times.')
+        bench_req_result = bench(f'bench_req_parsing({req_num})')
+        print(f'Parsing total time: {bench_req_result[0]}s')
+        print(f'Parsing avg time: {bench_req_result[1]}s')
 
     if res:
-        print('Parsing response num {} with HTTPParser 100_000 times'.format(res_num))
-        bench_res_result = bench('bench_res_parsing({})'.format(res_num))
-        print('Parsing total time: {}s'.format(bench_res_result[0]))
-        print('Parsing avg time: {}s'.format(bench_res_result[1]))
+        print(f'Parsing response num {res_num} with HTTPParser 100_000 times')
+        bench_res_result = bench(f'bench_res_parsing({res_num})')
+        print(f'Parsing total time: {bench_res_result[0]}s')
+        print(f'Parsing avg time: {bench_res_result[1]}s')

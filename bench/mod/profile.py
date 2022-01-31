@@ -16,21 +16,18 @@ def run(
     req_num: int = 0, res_num: int = 0
 ):
     """Run the profiler."""
-    msg = 'Profiling HTTPParser class while parsing {} number {}'.format(
-        'request' if req else 'response',
-        req_num if req else res_num
-    )
+    profile_type = 'request' if req else 'response'
+    profile_num = req_num if req else res_num
+    msg = f'Profiling HTTPParser class while parsing {profile_type} number {profile_num}'
     print(msg)
 
     if req:
         cProfile.runctx(
-            'for _ in range(100_000): run_http_parser_req(reqs[{}])'
-                .format(req_num),
+            f'for _ in range(100_000): run_http_parser_req(reqs[{req_num}])',
             globals(), {}
         )
     if res:
         cProfile.runctx(
-            'for _ in range(100_000): run_http_parser_res(reses[{}])'
-                .format(res_num),
+            f'for _ in range(100_000): run_http_parser_res(reses[{res_num}])',
             globals(), {}
         )
