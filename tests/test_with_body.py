@@ -41,8 +41,8 @@ Hello World!
         for (key, val) in zip(names, values):
             result['headers'][key] = val
 
-        if 'content-length' in result['headers']:
-            body_len = int(result['headers']['content-length'])
+        if b'content-length' in result['headers']:
+            body_len = int(result['headers'][b'content-length'])
             parser.has_body(True)
             parser.body_processor(python_http_parser.body.FixedLenProcessor(body_len))
 
@@ -56,10 +56,10 @@ Hello World!
     assert parser.has_body()
     assert result['http_version'] == (1, 1)
     assert result['status_code'] == 200
-    assert result['reason'] == 'All Good'
+    assert result['reason'] == b'All Good'
     assert len(result['raw_headers']) == 6
     assert len(result['headers']) == 3
-    assert result['headers']['content-length'] == '13'
+    assert result['headers'][b'content-length'] == b'13'
     assert result['body'] == 'Hello World!\n'
 
 def test_stream_fixed_len_chunked():
@@ -100,8 +100,8 @@ Hello World!
         for (key, val) in zip(names, values):
             result['headers'][key] = val
 
-        if 'content-length' in result['headers']:
-            body_len = int(result['headers']['content-length'])
+        if b'content-length' in result['headers']:
+            body_len = int(result['headers'][b'content-length'])
             parser.has_body(True)
             parser.body_processor(python_http_parser.body.FixedLenProcessor(body_len))
 
@@ -115,10 +115,10 @@ Hello World!
     assert parser.has_body()
     assert result['http_version'] == (1, 1)
     assert result['status_code'] == 200
-    assert result['reason'] == 'All Good'
+    assert result['reason'] == b'All Good'
     assert len(result['raw_headers']) == 6
     assert len(result['headers']) == 3
-    assert result['headers']['content-length'] == '13'
+    assert result['headers'][b'content-length'] == b'13'
     assert result['body'] == 'Hello World!\n'
 
 def test_stream_transfer_chunked():
@@ -162,8 +162,8 @@ def test_stream_transfer_chunked():
         for (key, val) in zip(names, values):
             result['headers'][key] = val
 
-        if ('transfer-encoding' in result['headers']) and (
-            result['headers']['transfer-encoding'] == 'chunked'
+        if (b'transfer-encoding' in result['headers']) and (
+            result['headers'][b'transfer-encoding'] == b'chunked'
         ):
             parser.has_body(True)
             parser.body_processor(python_http_parser.body.ChunkedProcessor())
@@ -178,10 +178,10 @@ def test_stream_transfer_chunked():
     assert parser.has_body()
     assert result['http_version'] == (1, 1)
     assert result['status_code'] == 200
-    assert result['reason'] == 'All Good'
+    assert result['reason'] == b'All Good'
     assert len(result['raw_headers']) == 6
     assert len(result['headers']) == 3
-    assert result['headers']['transfer-encoding'] == 'chunked'
+    assert result['headers'][b'transfer-encoding'] == b'chunked'
     assert result['body'] == 'Hello World!\n'
 
 def test_stream_transfer_chunked_chunked():
@@ -228,8 +228,8 @@ def test_stream_transfer_chunked_chunked():
         for (key, val) in zip(names, values):
             result['headers'][key] = val
 
-        if ('transfer-encoding' in result['headers']) and (
-            result['headers']['transfer-encoding'] == 'chunked'
+        if (b'transfer-encoding' in result['headers']) and (
+            result['headers'][b'transfer-encoding'] == b'chunked'
         ):
             parser.has_body(True)
             parser.body_processor(python_http_parser.body.ChunkedProcessor())
@@ -244,8 +244,8 @@ def test_stream_transfer_chunked_chunked():
     assert parser.has_body()
     assert result['http_version'] == (1, 1)
     assert result['status_code'] == 200
-    assert result['reason'] == 'All Good'
+    assert result['reason'] == b'All Good'
     assert len(result['raw_headers']) == 6
     assert len(result['headers']) == 3
-    assert result['headers']['transfer-encoding'] == 'chunked'
+    assert result['headers'][b'transfer-encoding'] == b'chunked'
     assert result['body'] == 'Hello World!\n'
