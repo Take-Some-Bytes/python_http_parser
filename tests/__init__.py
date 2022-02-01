@@ -21,7 +21,23 @@ def parser_process_chunks(parser, chunks):
         view[buf_len:buf_len+len(chk)] = chk
         buf_len += len(chk)
 
-        ret = parser.process(bytes(view[:buf_len]))
+        ret = parser.process(view[:buf_len])
+        if ret >= 0:
+            view[:len(view)-ret] = view[ret:]
+            buf_len -= ret
+        if ret < 0:
+            break
+
+def processor_process_chunks(parser, chunks, allow_lf):
+    """Helper function to parse a bunch of chunks using the specified body processor."""
+    buf = bytearray(256)
+    view = memoryview(buf)
+    buf_len = 0
+    for chk in chunks:
+        view[buf_len:buf_len+len(chk)] = chk
+        buf_len += len(chk)
+
+        ret = parser.process(bytes(view[:buf_len]), allow_lf)
         if ret >= 0:
             view[:len(view)-ret] = view[ret:]
             buf_len -= ret

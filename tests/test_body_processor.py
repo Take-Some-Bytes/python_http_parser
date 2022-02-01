@@ -4,24 +4,11 @@ when ``Content-Length`` is encountered, and ``ChunkedProcessor``, for use
 when ``Transfer-Encoding: chunked`` is encountered.
 """
 
-from . import chunk, parser_process_chunks
+from . import chunk, parser_process_chunks, processor_process_chunks
 from .context import python_http_parser
 
 FixedLenProcessor = python_http_parser.body.FixedLenProcessor
 ChunkedProcessor = python_http_parser.body.ChunkedProcessor
-
-
-class mock_processor:
-    """Mock class to make body processor to work like the HTTPParser class."""
-    # pylint: disable=too-few-public-methods,invalid-name
-
-    def __init__(self, processor):
-        """Mock class to make body processor to work like the HTTPParser class."""
-        self.processor = processor
-
-    def process(self, chk):
-        """Process the next chunk."""
-        return self.processor.process(chk, True)
 
 
 def test_fixed_body():
@@ -78,7 +65,7 @@ Why not?\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<- That's 16 tabs.
     processor.on_data(create_on_data(1))
     processor.on_finished(create_on_finished(1))
     processor.on_error(on_error)
-    parser_process_chunks(mock_processor(processor), chunk(body, 5))
+    processor_process_chunks(processor, chunk(body, 5), True)
 
     results[1]['body'] = b''.join(results[1]['chunks'])
 
@@ -153,7 +140,7 @@ Why not?\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<- That's 16 tabs.
     processor.on_data(create_on_data(1))
     processor.on_finished(create_on_finished(1))
     processor.on_error(on_error)
-    parser_process_chunks(mock_processor(processor), chunk(body, 6))
+    processor_process_chunks(processor, chunk(body, 6), True)
 
     results[1]['body'] = b''.join(results[1]['chunks'])
 
@@ -230,7 +217,7 @@ Why not?\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<- That's 16 tabs.
     processor.on_data(create_on_data(1))
     processor.on_finished(create_on_finished(1))
     processor.on_error(on_error)
-    parser_process_chunks(mock_processor(processor), chunk(body, 6))
+    processor_process_chunks(processor, chunk(body, 6), True)
 
     results[1]['body'] = b''.join(results[1]['chunks'])
 
