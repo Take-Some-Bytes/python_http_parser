@@ -8,7 +8,7 @@ __all__ = [
 ]
 
 from collections.abc import Iterator, Sized
-from typing import Optional, Union, Iterator as TypingIterator
+from typing import Optional, Tuple, Union, Iterator as TypingIterator
 # For compatibility with Python<3.8
 from typing_extensions import SupportsIndex
 
@@ -128,3 +128,84 @@ class Bytes(Iterator, Sized):
             self.advance(8)
             return bytes(self.slice())
         return None
+
+
+class Buffer(Iterator, Sized):
+    """
+    A Buffer class for quick reading of immutable byte objects.
+    """
+
+    def __init__(self, data: memoryview) -> None:
+        """
+        Create a new Buffer object.
+
+        This class will *copy* the data within the memoryview. The starting copy
+        is the only copy this class will make.
+        """
+        self.data = bytes(data)
+        self.view = memoryview(self.data)
+        self.data_len = len(self.data)
+
+        self.cursor_pos = 0
+        self.actual_data_start = 0
+
+    def __len__(self) -> int:
+        return self.data_len - self.actual_data_start
+
+    def __iter__(self) -> TypingIterator[int]:
+        return self
+
+    def __next__(self) -> int:
+        try:
+            byte = self.view[self.cursor_pos]
+
+            self.cursor_pos += 1
+            self.actual_data_start += 1
+
+            return byte
+        except IndexError:
+            # We don't care about preserving the stack trace here.
+            # pylint: disable=raise-missing-from
+            raise StopIteration
+
+    def __getitem__(self, index: int) -> int:
+        return self.view[self.cursor_pos + index]
+
+    def to_bytes(self) -> bytes:
+        """Convert this Buffer object's data to the builtin ``byte`` data structure.
+
+        This only returns data starting from ``self.cursor_pos``.
+        """
+        return bytes(self.view[self.cursor_pos:])
+
+    def bump(self):
+        """Move this Buffer's cursor by 1."""
+        self.cursor_pos += 1
+        self.actual_data_start += 1
+
+    def advance(self, amt: int):
+        """Move this Buffer's cursor by amt."""
+        self.cursor_pos += amt
+        self.actual_data_start += amt
+
+    def startswith(self, prefix: Union[bytes, Tuple[bytes]]) -> bool:
+        """Return True if this Buffer object starts with the specified prefix, False otherwise."""
+        return self.data.startswith(prefix, self.actual_data_start)
+
+    def find(self, sub: Union[bytes, SupportsIndex]) -> int:
+        """Return the lowest index in this Buffer object where subsection sub is found"""
+        index = self.data.find(sub, self.actual_data_start)
+
+        return -1 if index < 0 else (index - self.actual_data_start)
+
+    def slice(self) -> memoryview:
+        """Remove all stored bytes until ``self.pos``.
+
+        Returns the removed bytes.
+        """
+        head = self.view[:self.cursor_pos]
+        tail = self.view[self.cursor_pos:]
+        self.view = tail
+        self.cursor_pos = 0
+
+        return head

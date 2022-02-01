@@ -9,18 +9,17 @@ __all__ = [
 
 import string
 from collections import namedtuple
-from typing import Any, Iterator, Optional, Tuple
+from typing import Optional, Tuple
 
 from . import body, bytedata, constants, errors
 from .constants import ParserState, ParserStrictness
 from .helpers.events import EventEmitter
-from .helpers.newline import find_newline, is_newline
 
 _DIGITS = tuple(string.digits.encode('utf-8'))
 _HTTP_VER_START = b'HTTP/1.'
-# Horizontal tab ("\t" in Python).
 _SPACE = 0x20
 _COLON = 0x3a
+_LF = 0x0a
 
 
 HTTPVersion = namedtuple('HTTPVersion', ['major', 'minor'])
@@ -47,6 +46,8 @@ class HTTPParser(EventEmitter):
 
     def _error(self, err: Exception) -> None:
         """Raise or emit an Exception."""
+        self._state = ParserState.HAD_ERROR
+
         if len(self.listeners('error')) < 1:
             # Unhandled exception.
             raise err
@@ -68,7 +69,7 @@ class HTTPParser(EventEmitter):
         self._body_processor.on_error(on_error)
         self._body_processor.on_finished(on_finished)
 
-    def _process_request_line(self, buf: bytedata.Bytes) -> int:
+    def _process_request_line(self, buf: bytedata.Buffer) -> int:
         """Process the HTTP request line, which is in ``buf``.
 
         Internal method. All errors will be propagated back to the caller.
@@ -79,65 +80,71 @@ class HTTPParser(EventEmitter):
         if self._state is ParserState.RECEIVING_METHOD:
             result = _recv_method(buf)
             if result is None:
-                # Incomplete method, so tell caller to buffer everything.
+                # Incomplete.
                 return nparsed
 
             method, parsed = result
             nparsed += parsed
 
-            self.emit('req_method_complete')
             self.emit('req_method', method)
             self._state = ParserState.RECEIVING_URI
 
         if self._state is ParserState.RECEIVING_URI:
             result = _recv_uri(buf)
             if result is None:
-                # Incomplete, return.
+                # Incomplete.
                 return nparsed
 
             uri, parsed = result
             nparsed += parsed
 
-            self.emit('req_uri_complete')
             self.emit('req_uri', uri)
             self._state = ParserState.PARSING_VERSION
 
         if self._state is ParserState.PARSING_VERSION:
             version = _parse_version(buf)
             if version is None:
-                # Incomplete AGAIN.
+                # Incomplete.
                 return nparsed
-            # Time to check that there is a newline.
-            is_crlf = is_newline(buf, b'\r\n')
-            if is_crlf is None:
-                # Not complete.
-                return nparsed
-            if not is_crlf:
-                is_lf = is_newline(buf, b'\n')
-                if is_lf is None:
-                    return nparsed
-                if not allow_lf:
-                    raise errors.NewlineError('CRLF is required!')
-                if not is_lf:
-                    raise errors.InvalidVersion(
-                        'Expected newline after version!')
-                # It's LF.
-                nparsed += 1
-            else:
-                # It's CRLF.
+
+            # There must be a newline after this.
+            is_cr = buf.startswith(b'\r')
+            if is_cr:
+                if not buf.startswith(b'\r\n'):
+                    # Bare CR!
+                    raise errors.NewlineError(
+                        'Expected CRLF, received bare CR.')
+
+                buf.advance(2)
                 nparsed += 2
+            else:
+                is_lf = buf.startswith(b'\n')
+                if is_lf:
+                    if not allow_lf:
+                        raise errors.NewlineError(
+                            'CRLF is required.')
+
+                    buf.bump()
+                    nparsed += 1
+                else:
+                    if len(buf) > 0:
+                        # You should have a newline.
+                        raise errors.InvalidVersion(
+                            'Expected newline after version!')
+                    # Incomplete.
+                    return nparsed
+
             buf.slice()
 
             # We parsed 8 bytes from the HTTP version.
             nparsed += 8
 
-            self.emit('version_complete')
-            self.emit('version', HTTPVersion(*version))
+            self.emit('version', version)
             self._state = ParserState.DONE_STARTLINE
 
         return nparsed
 
-    def _process_status_line(self, buf: bytedata.Bytes) -> int:
+    def _process_status_line(self, buf: bytedata.Buffer) -> int:
         """Process the HTTP status line which is in ``buf``.
 
         Internal method. All errors will be propagated back to the caller.
@@ -145,87 +152,105 @@ class HTTPParser(EventEmitter):
         # It's sad we have to do this, but we have 7 returns here, 1 more than
         # PyLint's limit.
         # pylint: disable=too-many-return-statements
-        allow_lf = self.strictness != ParserStrictness.STRICT
-        result: Any = None
-
         nparsed = 0
+        allow_lf = self.strictness != ParserStrictness.STRICT
+
         if self._state is ParserState.PARSING_VERSION:
             version = _parse_version(buf)
             if version is None:
-                # Incomplete version, so we'll have to get the user
-                # to buffer all the passed-in bytes.
-                return nparsed  # (i.e. 0)
+                # Incomplete.
+                return nparsed
 
-            # We parsed 8 bytes. Increase the nparsed variable, which tracks
-            # the number of bytes parsed.
+            # Check that there is a space.
+            is_space = buf.startswith(b' ')
+            if not is_space:
+                if len(buf) > 0:
+                    # You should have a space.
+                    raise errors.UnexpectedChar(
+                        f'Expected space after version, received {chr(buf[0])}.')
+                # Otherwise, it's incomplete.
+                return nparsed
+
+            # Process the space.
+            nparsed += 1
+            buf.bump()
+            buf.slice()
+
+            # We parsed 8 bytes.
             nparsed += 8
 
-            self.emit('version_complete')
-            self.emit('version', HTTPVersion(*version))
+            self.emit('version', version)
             self._state = ParserState.RECEIVING_STATUS_CODE
 
         if self._state is ParserState.RECEIVING_STATUS_CODE:
-            if not _expect(_SPACE, iter(buf)):
-                # The status code is not complete.
-                return nparsed
-
-            # Remove all the stuff we processed.
-            buf.slice()
             status_code = _recv_code(buf)
             if status_code is None:
-                # Incomplete, buffer all bytes after ``nparsed``
+                # Incomplete.
                 return nparsed
 
-            # +4 because of the space.
-            nparsed += 4
+            # +3 because of 3-digit status code.
+            nparsed += 3
 
-            self.emit('status_complete')
             self.emit('status_code', status_code)
-
             self._state = ParserState.RECEIVING_REASON
 
         if self._state is ParserState.RECEIVING_REASON:
             # If a newline is received directly after the status code and the
             # parser strictness isn't ParserStrictness.STRICT, treat the reason
             # phrase as non-existent.
-            result = _has_reason(buf, allow_lf)
-            if result is None:
-                # Incomplete.
-                return nparsed
-            has_reason, parsed = result
-            nparsed += parsed
+            is_cr = buf.startswith(b'\r')
+            is_crlf = buf.startswith(b'\r\n')
+            if is_cr:
+                if not is_crlf:
+                    # Bare CR!
+                    raise errors.NewlineError(
+                        'Expected CRLF, received bare CR.')
 
-            if not has_reason:
-                # There is not a reason phrase!
-                # ``parsed`` contains the number of bytes the function processed.
+            is_lf = buf.startswith(b'\n')
+            if (is_crlf or is_lf) and self.strictness is not ParserStrictness.STRICT:
+                # Reason phrase doesn't exist.
+                # Oh well.
+                nprocessed = 2 if is_crlf else 1
+                nparsed += nprocessed
+                buf.advance(nprocessed)
                 buf.slice()
-                self.emit('reason_complete')
-                self.emit('reason', '')
+
+                self.emit('reason', b'')
                 self._state = ParserState.DONE_STARTLINE
                 return nparsed
 
-            # A space is required if there is supposed to be a reason phrase.
-            if not _expect(_SPACE, iter(buf)):
-                # The reason phrase is not complete.
+            # We have a reason phrase.
+            # Check that there is a space.
+            is_space = buf.startswith(b' ')
+            if not is_space:
+                if len(buf) > 0:
+                    # You should have a space.
+                    raise errors.UnexpectedChar(
+                        f'Expected space before reason phrase, got {chr(buf[0])}.')
+                # Otherwise, it's incomplete.
                 return nparsed
 
-            # Slice the buffer now to remove the previous character from memory.
+            # Process the space.
+            # Don't increment nparsed because we'll need the space again
+            # if the reason phrase is incomplete.
+            buf.bump()
             buf.slice()
+
             result = _recv_reason(buf, allow_lf)
             if result is None:
+                # Incomplete.
                 return nparsed
 
             reason, reason_len = result
-            # +1 because of the space.
+            # +1 because we need to account for the space.
             nparsed += reason_len + 1
 
-            self.emit('reason_complete')
             self.emit('reason', reason)
             self._state = ParserState.DONE_STARTLINE
 
         return nparsed
 
-    def _process_headers(self, buf: bytedata.Bytes) -> int:
+    def _process_headers(self, buf: bytedata.Buffer) -> int:
         """Process the HTTP headers.
 
         Internal method. All errors will be propagated back to the caller.
@@ -237,52 +262,61 @@ class HTTPParser(EventEmitter):
         headers_over = False
         while not headers_over:
             if self._state is ParserState.PARSING_HEADER_NAME:
-                is_crlf = is_newline(buf, b'\r\n')
-                is_lf = is_newline(buf, b'\n')
-                if is_crlf is None and is_lf is None:
-                    # The message stops there.
-                    break
-                if is_lf:
-                    if not allow_lf:
-                        raise errors.NewlineError('CRLF is required!')
+                is_cr = buf.startswith(b'\r')
+                if is_cr:
+                    if not buf.startswith(b'\r\n'):
+                        # Bare CR!
+                        raise errors.NewlineError(
+                            'Expected CRLF, received bare CR.')
+
                     # Headers are over!
-                    nparsed += 1
-                    headers_over = True
-                    break
-                if is_crlf:
-                    # It's CRLF
                     nparsed += 2
+                    buf.advance(2)
+                    buf.slice()
                     headers_over = True
                     break
 
+                is_lf = buf.startswith(b'\n')
+                if is_lf:
+                    if not allow_lf:
+                        # Oops! Only CRLF allowed!
+                        raise errors.NewlineError('CRLF is required!')
+                    # Otherwise, headers are over!
+                    nparsed += 1
+                    buf.bump()
+                    buf.slice()
+                    headers_over = True
+                    break
+
+                # Here comes another header name!
                 result = _recv_header_name(buf)
                 if result is None:
+                    # Incomplete.
                     break
                 header_name, parsed = result
                 nparsed += parsed
 
-                self.emit('header_name_complete')
                 self.emit('header_name', header_name)
                 self._state = ParserState.PARSING_HEADER_VAL
 
             if self._state is ParserState.PARSING_HEADER_VAL:
                 result = _recv_header_value(buf, allow_lf)
                 if result is None:
+                    # Incomplete.
                     break
                 header_val, parsed = result
                 nparsed += parsed
 
-                self.emit('header_value_complete')
                 self.emit('header_value', header_val)
                 self._state = ParserState.PARSING_HEADER_NAME
 
         if headers_over:
-            buf.slice()
             self.emit('headers_complete')
             self._state = ParserState.DONE_HEADERS
+
         return nparsed
 
-    def _process(self, buf: bytedata.Bytes) -> int:
+    def _process(self, buf: bytedata.Buffer) -> int:
         """Internal ``._process()`` method.
 
         Contains the parser directing logic. All errors will be propagated
@@ -323,9 +357,9 @@ class HTTPParser(EventEmitter):
                 raise errors.BodyProcessorRequired()
 
             ret = self._body_processor.process(
-                buf.as_bytes(), self.strictness != ParserStrictness.STRICT
+                buf.to_bytes(), self.strictness != ParserStrictness.STRICT
             )
-            if not bool(~ret):
+            if ret < 0:
                 # Error!
                 nparsed = -1
             else:
@@ -362,7 +396,7 @@ class HTTPParser(EventEmitter):
         self._body_processor = None
         self._state = ParserState.EMPTY
 
-    def process(self, data: bytes) -> int:
+    def process(self, data: memoryview) -> int:
         """Process the contents of ``data`` as part of the HTTP message.
 
         Returns the number of bytes processed. Any unprocessed bytes must
@@ -378,14 +412,14 @@ class HTTPParser(EventEmitter):
             # We has error.
             return -1
 
-        buf = bytedata.Bytes(data)
+        buf = bytedata.Buffer(data)
 
         try:
             if self._state is ParserState.EMPTY:
+                # Only try to skip empty lines if this parser is in request mode.
                 if self.is_response:
                     self._state = ParserState.PARSING_VERSION
                 else:
-                    # Only try to skip empty lines if this parser is in request mode.
                     ret = _skip_empty_lines(
                         buf, self.strictness != ParserStrictness.STRICT)
                     if ret is None:
@@ -403,54 +437,51 @@ class HTTPParser(EventEmitter):
             return -1
 
 
-def _expect(byte: int, byte_iter: Iterator[int]) -> bool:
-    """Expect the next byte of ``iterator`` to be ``byte``.
-
-    Raises errors.UnexpectedChar if bytes do not match. Returns
-    False if there were no more elements in the iterator.
-    Returns True otherwise.
-    """
-    next_byte = next(byte_iter, None)
-    if next_byte is None:
-        return False
-    if next_byte != byte:
-        raise errors.UnexpectedChar(
-            f'Expected char "{chr(byte)}", received {chr(next_byte)}')
-
-    return True
-
-
 def _skip_empty_lines(
-        buf: bytedata.Bytes,
+        buf: bytedata.Buffer,
         allow_lf: bool
-) -> Optional[bytedata.Bytes]:
+) -> Optional[bytedata.Buffer]:
     """Skip all empty lines."""
     while True:
-        is_crlf = is_newline(buf, b'\r\n')
-        if is_crlf is None:
-            return None
-        if not is_crlf:
-            is_lf = is_newline(buf, b'\n')
-            if is_lf is None:
-                return None
-            if is_lf:
-                if not allow_lf:
-                    raise errors.NewlineError('CRLF is required!')
-                continue
-        else:
+        is_cr = buf.startswith(b'\r')
+        if is_cr:
+            if not buf.startswith(b'\r\n'):
+                # Bare CR!
+                raise errors.NewlineError('Expected CRLF, received bare CR.')
+
+            buf.advance(2)
             continue
 
-        # Finally! A line with stuff in it!
+        is_lf = buf.startswith(b'\n')
+        if is_lf:
+            if not allow_lf:
+                # Oops! LF isn't allowed.
+                raise errors.NewlineError('CRLF is required!')
+
+            buf.bump()
+            continue
+
+        # It's not LF and it's not CRLF, so it could
+        # either be empty or we actually have data.
+        break
+
+    if len(buf) > 0:
+        # We have data!
         buf.slice()
         return buf
 
+    # No data
+    return None
 
-def _parse_version(buf: bytedata.Bytes) -> Optional[Tuple[int, int]]:
+
+def _parse_version(buf: bytedata.Buffer) -> Optional[HTTPVersion]:
     """Parse the HTTP version that exists in ``buf``."""
-    next_8 = buf.next_8()
-    if next_8 is None:
-        # Incomplete.
+    if len(buf) < 8:
+        # Too short.
         return None
+
+    buf.advance(8)
+    next_8 = bytes(buf.slice())
 
     if not next_8.startswith(_HTTP_VER_START):
         raise errors.InvalidVersion(
@@ -459,45 +490,50 @@ def _parse_version(buf: bytedata.Bytes) -> Optional[Tuple[int, int]]:
     # It's time for the last byte.
     # We only accept 0 (HTTP/1.0) and 1 (HTTP/1.1).
     last_byte = next_8[7]
-
     if last_byte not in (_DIGITS[0], _DIGITS[1]):
         raise errors.InvalidVersion(
             f'Expected 0 or 1 for HTTP minor version, received {bytes([last_byte])!r}'
         )
 
-    return (1, int(bytes([last_byte])))
+    return HTTPVersion(1, int(bytes([last_byte])))
 
 
-def _has_reason(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[bool, int]]:
-    """Is a reason phrase expected?
+def _recv_method(buf: bytedata.Buffer) -> Optional[Tuple[bytes, int]]:
+    """Receive the HTTP request method in ``buf``.
 
-    Return None if incomplete. Return a boolean representing whether a reason
-    phrase is expected and the number of bytes parsed otherwise.
+    Returns a tuple containing the request method and the number of bytes parsed.
     """
     nparsed = 0
-    is_crlf = is_newline(buf, b'\r\n')
-    if is_crlf is None:
-        # Not complete.
+    space_index = buf.find(_SPACE)
+    if space_index < 0:
+        # Before assuming it is incomplete, we have to check something.
+        if len(buf) > constants.MAX_REQ_METHOD_LEN:
+            # There are way too many bytes.
+            raise errors.InvalidToken('Request method too large!')
+        # Now we know it's incomplete.
         return None
-    if not is_crlf:
-        is_lf = is_newline(buf, b'\n')
-        if is_lf is None:
-            return None
-        if is_lf:
-            if not allow_lf:
-                raise errors.NewlineError('CRLF is required!')
-            has_reason = False
-            nparsed += 1
-        else:
-            # There is no newline, so there is a reason phrase.
-            has_reason = True
-    else:
-        has_reason = False
 
-    return (has_reason, nparsed)
+    # The token needs to actually exist.
+    if space_index == 0:
+        raise errors.InvalidToken(
+            'Expected token in HTTP method, received space.')
+
+    # +1 because of the space
+    nparsed += space_index + 1
+    if nparsed > constants.MAX_REQ_METHOD_LEN:
+        raise errors.InvalidToken('Request method too large!')
+
+    # +1 to include the space, and then [:-1] to ignore it.
+    buf.advance(space_index + 1)
+    method = bytes(buf.slice()[:-1])
+
+    if not _is_token(method):
+        raise errors.InvalidToken('Expected token in HTTP method')
+
+    return (method, nparsed)
 
 
-def _recv_uri(buf: bytedata.Bytes) -> Optional[Tuple[str, int]]:
+def _recv_uri(buf: bytedata.Buffer) -> Optional[Tuple[bytes, int]]:
     """Receive the HTTP request URI in ``buf``.
 
     Returns a tuple containing the request URI and number of bytes
@@ -505,70 +541,36 @@ def _recv_uri(buf: bytedata.Bytes) -> Optional[Tuple[str, int]]:
     """
     nparsed = 0
     space_index = buf.find(_SPACE)
-    if not bool(~space_index):
+    if space_index < 0:
         # Before assuming it is incomplete, we have to check something.
         if len(buf) > constants.MAX_URI_LEN:
             # There are way too many bytes.
-            raise errors.InvalidToken('Request method too large!')
+            raise errors.InvalidURI('Request URI too large!')
         # Incomplete URI.
         return None
-    if space_index < 1:
+
+    # Please actually include an URI.
+    if space_index == 0:
         raise errors.InvalidURI('Expected URI character, received space.')
 
     # +1 because of the space.
     nparsed = space_index + 1
     if nparsed > constants.MAX_URI_LEN:
-        raise errors.InvalidURI(
-            f'Exceeded max URI method length of {constants.MAX_URI_LEN}')
+        raise errors.InvalidURI('Request URI too large!')
 
     # +1 to consume the space as well
     buf.advance(space_index + 1)
     # And here, we ignore the space.
-    raw_uri = bytes(buf.slice()).strip()
+    uri = bytes(buf.slice()[:-1])
 
-    if not _is_uri(raw_uri):
+    if not _is_uri(uri):
         raise errors.InvalidURI(
             'Expected URI characters in HTTP URI.')
 
-    uri = raw_uri.decode('utf-8')
     return (uri, nparsed)
 
 
-def _recv_method(buf: bytedata.Bytes) -> Optional[Tuple[str, int]]:
-    """Receive the HTTP request method in ``buf``.
-
-    Returns a tuple containing the request method and the number of bytes parsed.
-    """
-    nparsed = 0
-    space_index = buf.find(_SPACE)
-    if not bool(~space_index):
-        # Before assuming it is incomplete, we have to check something.
-        if len(buf) > constants.MAX_REQ_METHOD_LEN:
-            # There are way too many bytes.
-            raise errors.InvalidToken('Request method too large!')
-        # Incomplete method.
-        return None
-    if space_index < 1:
-        raise errors.InvalidToken(
-            'Expected token in HTTP method, received space.')
-    # +1 because of the space
-    nparsed += space_index + 1
-    if nparsed > constants.MAX_REQ_METHOD_LEN:
-        raise errors.InvalidToken(
-            f'Exceeded max request method length of {constants.MAX_REQ_METHOD_LEN}')
-
-    # +1 to include the space, and then .strip to ignore it.
-    buf.advance(space_index + 1)
-    raw_method = bytes(buf.slice()).strip()
-
-    if not _is_token(raw_method):
-        raise errors.InvalidToken('Expected token in HTTP method')
-
-    method = raw_method.decode('utf-8')
-    return (method, nparsed)
-
-
-def _recv_code(buf: bytedata.Bytes) -> Optional[int]:
+def _recv_code(buf: bytedata.Buffer) -> Optional[int]:
     """Receive the HTTP status code in ``buf``."""
     if len(buf) < 3:
         # Not enough bytes.
@@ -582,7 +584,7 @@ def _recv_code(buf: bytedata.Bytes) -> Optional[int]:
     return int(raw_code)
 
 
-def _recv_reason(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[str, int]]:
+def _recv_reason(buf: bytedata.Buffer, allow_lf: bool) -> Optional[Tuple[bytes, int]]:
     """Receive the HTTP reason phrase.
 
     This function assumes that the reason phrase exists, so if you wish
@@ -593,14 +595,21 @@ def _recv_reason(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[str, int
     bytes parsed.
     """
     nparsed = 0
-    crlf_index = find_newline(buf, b'\r\n')
-    has_crlf = bool(~crlf_index)
+    cr_index = buf.find(b'\r')
+    crlf_index = cr_index
+    if cr_index >= 0:
+        if len(buf) == cr_index + 1:
+            # We're gonna get an IndexError.
+            return None
 
-    if not has_crlf:
+        if buf[cr_index + 1] != _LF:
+            # Bare CR!
+            raise errors.NewlineError('Expected CRLF, received bare CR.')
+
+    if crlf_index < 0:
         # Try getting an LF.
-        lf_index = find_newline(buf, b'\n')
-        has_lf = bool(~lf_index)
-        if not has_lf:
+        lf_index = buf.find(b'\n')
+        if lf_index < 0:
             # Hmmm...
             if len(buf) > constants.MAX_HEADER_VAL_SIZE:
                 # There should be a newline, since there are many more
@@ -615,30 +624,31 @@ def _recv_reason(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[str, int
 
         # We have an LF!
         nparsed += lf_index + 1
-        if (nparsed - 1) > constants.MAX_HEADER_VAL_SIZE:
+        if lf_index > constants.MAX_HEADER_VAL_SIZE:
             raise errors.InvalidStatus('Reason phrase too large!')
         buf.advance(lf_index + 1)
-        raw_reason = bytes(buf.slice()).strip()
+        reason = bytes(buf.slice()[:-1])
     else:
         # We have a CRLF.
         nparsed += crlf_index + 2
-        if (nparsed - 2) > constants.MAX_HEADER_VAL_SIZE:
+        if crlf_index > constants.MAX_HEADER_VAL_SIZE:
             raise errors.InvalidStatus('Reason phrase too large!')
         buf.advance(crlf_index + 2)
-        raw_reason = bytes(buf.slice()).strip()
+        reason = bytes(buf.slice()[:-2])
 
-    if not _is_vchar_or_whsp(raw_reason):
+    if not _is_vchar_or_whsp(reason):
         # Check for obsolete text.
         if not _is_obs_text(
-                raw_reason.translate(None, constants.VCHAR_OR_WSP)):
+                reason.translate(None, constants.VCHAR_OR_WSP)):
             raise errors.InvalidStatus(
                 'Invalid characters in response reason phrase!')
         # We has obsolete text.
-        return ('', nparsed)
-    return (raw_reason.decode('utf-8'), nparsed)
+        return (b'', nparsed)
+
+    return (reason, nparsed)
 
 
-def _recv_header_name(buf: bytedata.Bytes) -> Optional[Tuple[str, int]]:
+def _recv_header_name(buf: bytedata.Buffer) -> Optional[Tuple[bytes, int]]:
     """Receive a HTTP header field name from ``buf``.
 
     This method does NOT treat newlines (``\\n`` or ``\\r\\n``) as the end
@@ -649,54 +659,47 @@ def _recv_header_name(buf: bytedata.Bytes) -> Optional[Tuple[str, int]]:
     """
     nparsed = 0
     colon_index = buf.find(_COLON)
-    has_colon = bool(~colon_index)
 
-    if not has_colon:
+    if colon_index < 0:
         # If there are more characters in the data than the maximum allowed
-        # characters in a header name, then something's invalid.
+        # characters in a header name, then something's wrong.
         if len(buf) > constants.MAX_HEADER_NAME_LEN:
             raise errors.InvalidToken('Header name too long!')
         # Otherwise, it's incomplete.
         return None
 
-    if colon_index < 1:
+    if colon_index == 0:
         # Tokens must be at least 1 char long. Header names are tokens.
-        raise errors.InvalidToken(
-            'Tokens must be at least one char long.')
+        raise errors.InvalidToken('Tokens must be at least one char long.')
     # +1 because of the colon.
     nparsed += colon_index + 1
-    if nparsed - 1 > constants.MAX_HEADER_NAME_LEN:
+    if colon_index > constants.MAX_HEADER_NAME_LEN:
         raise errors.InvalidToken('Header name too long!')
 
     # Get header name and colon.
-    buf.advance(colon_index + 1)
+    buf.advance(nparsed)
     # Slice the buffer and remove the colon.
-    raw_header_name = bytes(buf.slice()[:-1])
-    if not _is_token(raw_header_name):
+    header_name = bytes(buf.slice()[:-1])
+    if not _is_token(header_name):
         raise errors.InvalidToken(
             'Invalid characters in header name!')
 
-    return (raw_header_name.decode('utf-8'), nparsed)
+    return (header_name, nparsed)
 
 
-def _recv_header_value(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[str, int]]:
+def _recv_header_value(buf: bytedata.Buffer, allow_lf: bool) -> Optional[Tuple[bytes, int]]:
     """Receive a HTTP header field value from ``buf``.
 
     This function will "eat" (i.e. ignore and drop) any whitespace that appears
     before any other characters in the field value.
     """
     nparsed = 0
-    # Now, get the header value.
-    # We only look for CRLF first, since it's the preferred newline type
-    # and so we spend less time looking for something we won't need.
-    crlf_index = find_newline(buf, b'\r\n')
-    has_crlf = bool(~crlf_index)
+    crlf_index = buf.find(b'\r\n')
 
-    if not has_crlf:
+    if crlf_index < 0:
         # Try getting an LF.
-        lf_index = find_newline(buf, b'\n')
-        has_lf = bool(~lf_index)
-        if not has_lf:
+        lf_index = buf.find(b'\n')
+        if lf_index < 0:
             # Hmmm...
             if len(buf) > constants.MAX_HEADER_VAL_SIZE:
                 # There should be a newline, since there are many more
@@ -711,30 +714,29 @@ def _recv_header_value(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[st
 
         # We have an LF!
         nparsed += lf_index + 1
-        if (nparsed - 1) > constants.MAX_HEADER_VAL_SIZE:
+        if lf_index > constants.MAX_HEADER_VAL_SIZE:
             raise errors.InvalidHeaderVal('Header field value too large!')
-        buf.advance(lf_index + 1)
-        raw_header_val = bytes(buf.slice()).strip()
+        buf.advance(nparsed)
+        header_val = bytes(buf.slice()).strip()
     else:
         # We have a CRLF.
         nparsed += crlf_index + 2
-        if (nparsed - 2) > constants.MAX_HEADER_VAL_SIZE:
+        if crlf_index > constants.MAX_HEADER_VAL_SIZE:
             raise errors.InvalidHeaderVal('Header field value too large!')
-        buf.advance(crlf_index + 2)
-        raw_header_val = bytes(buf.slice()).strip()
+        buf.advance(nparsed)
+        header_val = bytes(buf.slice()).strip()
 
-    # Delete all valid characters. Any characters left are possibly invalid.
-    if not _is_vchar_or_whsp(raw_header_val):
+    if not _is_vchar_or_whsp(header_val):
         # Check for obsolete text.
         if not _is_obs_text(
-                raw_header_val.translate(None, constants.VCHAR_OR_WSP)):
+                header_val.translate(None, constants.VCHAR_OR_WSP)):
             raise errors.InvalidHeaderVal(
                 'Invalid characters in header value!')
 
         # We has obsolete text.
         return ('', nparsed)
 
-    return (raw_header_val.decode('utf-8'), nparsed)
+    return (header_val, nparsed)
 
 
 def _is_token(_bytes: bytes) -> bool:
