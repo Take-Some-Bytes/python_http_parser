@@ -4,7 +4,7 @@ when ``Content-Length`` is encountered, and ``ChunkedProcessor``, for use
 when ``Transfer-Encoding: chunked`` is encountered.
 """
 
-from . import chunk, parser_process_chunks, processor_process_chunks
+from . import chunk, processor_process_chunks
 from .context import python_http_parser
 
 FixedLenProcessor = python_http_parser.body.FixedLenProcessor
