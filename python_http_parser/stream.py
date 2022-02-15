@@ -8,8 +8,7 @@ __all__ = [
 ]
 
 import string
-from collections import namedtuple
-from typing import Optional, Tuple
+from typing import Optional, Tuple, NamedTuple
 
 from . import body, bytedata, constants, errors
 from .constants import ParserState, ParserStrictness
@@ -22,7 +21,9 @@ _COLON = 0x3a
 _LF = 0x0a
 
 
-HTTPVersion = namedtuple('HTTPVersion', ['major', 'minor'])
+class HTTPVersion(NamedTuple):
+    major: int
+    minor: int
 
 
 class HTTPParser(EventEmitter):
