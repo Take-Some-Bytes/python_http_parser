@@ -13,6 +13,7 @@ from typing import Optional, Tuple, NamedTuple
 from . import body, constants, errors
 from .constants import ParserState, ParserStrictness
 from .helpers.events import EventEmitter
+from .helpers.newline import startswith_newline, NewlineType
 
 _DIGITS = tuple(string.digits.encode('utf-8'))
 _HTTP_VER_START = b'HTTP/1.'
@@ -22,6 +23,7 @@ _LF = 0x0a
 
 
 class HTTPVersion(NamedTuple):
+    """Represents a HTTP version."""
     major: int
     minor: int
 
@@ -125,31 +127,19 @@ class HTTPParser(EventEmitter):
             buf = remaining
 
             # There must be a newline after this.
-            is_cr = buf.startswith(b'\r')
-            if is_cr:
-                if not buf.startswith(b'\r\n'):
-                    # Bare CR!
-                    raise errors.NewlineError(
-                        'Expected CRLF, received bare CR.')
+            n_result = startswith_newline(buf, allow_lf)
+            if n_result is None:
+                # Incomplete.
+                return _ProcessResult(nparsed, buf)
 
-                buf = buf[2:]
-                nparsed += 2
-            else:
-                is_lf = buf.startswith(b'\n')
-                if is_lf:
-                    if not allow_lf:
-                        raise errors.NewlineError(
-                            'CRLF is required.')
+            is_newline, newline_type = n_result
+            if not is_newline:
+                raise errors.InvalidVersion(
+                    'Expected newline after version!')
 
-                    buf = buf[1:]
-                    nparsed += 1
-                else:
-                    if len(buf) > 0:
-                        # You should have a newline.
-                        raise errors.InvalidVersion(
-                            'Expected newline after version!')
-                    # Incomplete.
-                    return _ProcessResult(nparsed, buf)
+            nprocessed = 2 if newline_type is NewlineType.CRLF else 1
+            buf = buf[nprocessed:]
+            nparsed += nprocessed
 
             # We parsed 8 bytes from the HTTP version.
             nparsed += 8
@@ -216,19 +206,15 @@ class HTTPParser(EventEmitter):
             # If a newline is received directly after the status code and the
             # parser strictness isn't ParserStrictness.STRICT, treat the reason
             # phrase as non-existent.
-            is_cr = buf.startswith(b'\r')
-            is_crlf = buf.startswith(b'\r\n')
-            if is_cr:
-                if not is_crlf:
-                    # Bare CR!
-                    raise errors.NewlineError(
-                        'Expected CRLF, received bare CR.')
+            result = startswith_newline(buf, allow_lf)
+            if result is None:
+                return _ProcessResult(nparsed, buf)
 
-            is_lf = buf.startswith(b'\n')
-            if (is_crlf or is_lf) and self.strictness is not ParserStrictness.STRICT:
+            is_newline, newline_type = result
+            if is_newline:
                 # Reason phrase doesn't exist.
-                # Oh well.
-                nprocessed = 2 if is_crlf else 1
+                # Oh well
+                nprocessed = 2 if newline_type is NewlineType.CRLF else 1
                 nparsed += nprocessed
                 buf = buf[nprocessed:]
 
@@ -279,27 +265,16 @@ class HTTPParser(EventEmitter):
         headers_over = False
         while not headers_over:
             if self._state is ParserState.PARSING_HEADER_NAME:
-                is_cr = buf.startswith(b'\r')
-                if is_cr:
-                    if not buf.startswith(b'\r\n'):
-                        # Bare CR!
-                        raise errors.NewlineError(
-                            'Expected CRLF, received bare CR.')
-
-                    # Headers are over!
-                    nparsed += 2
-                    buf = buf[2:]
-                    headers_over = True
+                result = startswith_newline(buf, allow_lf)
+                if result is None:
                     break
 
-                is_lf = buf.startswith(b'\n')
-                if is_lf:
-                    if not allow_lf:
-                        # Oops! Only CRLF allowed!
-                        raise errors.NewlineError('CRLF is required!')
-                    # Otherwise, headers are over!
-                    nparsed += 1
-                    buf = buf[1:]
+                is_newline, newline_type = result
+                if is_newline:
+                    # Headers are over!
+                    nprocessed = 2 if newline_type is NewlineType.CRLF else 1
+                    nparsed += nprocessed
+                    buf = buf[nprocessed:]
                     headers_over = True
                     break
 
@@ -717,6 +692,8 @@ def _recv_header_value(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
     This function will "eat" (i.e. ignore and drop) any whitespace that appears
     before any other characters in the field value.
     """
+    # TODO: Handle bare CR.
+    # (02/27/2022) Take-Some-Bytes
     nparsed = 0
     crlf_index = buf.find(b'\r\n')
 

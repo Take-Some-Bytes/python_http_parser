@@ -1,5 +1,7 @@
 """Newline-related helper functions."""
-from typing import Optional, Union, Sized
+from enum import Enum
+
+from typing import Optional, Tuple, Union, Sized
 # Use typing_extensions to maintain compatibility.
 from typing_extensions import Literal, SupportsIndex, Protocol
 
@@ -72,3 +74,47 @@ def is_newline(buf: bytedata.Bytes, newline_type: Literal[b'\n', b'\r\n']) -> Op
         return True
 
     return False
+
+
+class NewlineType(Enum):
+    """
+    The type of the newline.
+
+    CR is not considered a valid newline type.
+    """
+    LF = 0
+    CRLF = 1
+    NONE = 2
+
+
+def startswith_newline(buf: bytes, allow_lf: bool) -> Optional[Tuple[bool, NewlineType]]:
+    """Does the buffer start with a newline?"""
+    buf_len = len(buf)
+
+    is_cr = buf.startswith(b'\r')
+    if is_cr:
+        if buf_len < 2:
+            # Incomplete.
+            return None
+        if not buf.startswith(b'\r\n'):
+            # Bare CR.
+            raise errors.NewlineError(
+                'Expected CRLF, received bare CR.')
+
+        # It's a CRLF.
+        return (True, NewlineType.CRLF)
+
+    is_lf = buf.startswith(b'\n')
+    if is_lf:
+        if not allow_lf:
+            raise errors.NewlineError('CRLF is required!')
+
+        # It's LF.
+        return (True, NewlineType.LF)
+
+    if len(buf) < 1:
+        # Incomplete.
+        return None
+
+    # No newline :(
+    return (False, NewlineType.NONE)
