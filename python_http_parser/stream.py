@@ -692,12 +692,18 @@ def _recv_header_value(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
     This function will "eat" (i.e. ignore and drop) any whitespace that appears
     before any other characters in the field value.
     """
-    # TODO: Handle bare CR.
-    # (02/27/2022) Take-Some-Bytes
     nparsed = 0
-    crlf_index = buf.find(b'\r\n')
+    cr_index = buf.find(b'\r')
+    if cr_index >= 0:
+        if len(buf) == cr_index + 1:
+            # We're gonna get an IndexError.
+            return None
 
-    if crlf_index < 0:
+        if buf[cr_index + 1] != _LF:
+            # Bare CR!
+            raise errors.NewlineError('Expected CRLF, received bare CR.')
+
+    if cr_index < 0:
         # Try getting an LF.
         lf_index = buf.find(b'\n')
         if lf_index < 0:
@@ -719,8 +725,8 @@ def _recv_header_value(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
             raise errors.InvalidHeaderVal('Header field value too large!')
     else:
         # We have a CRLF.
-        nparsed += crlf_index + 2
-        if crlf_index > constants.MAX_HEADER_VAL_SIZE:
+        nparsed += cr_index + 2
+        if cr_index > constants.MAX_HEADER_VAL_SIZE:
             raise errors.InvalidHeaderVal('Header field value too large!')
 
     # Get the header value and slice the buffer.

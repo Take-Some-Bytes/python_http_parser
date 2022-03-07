@@ -247,3 +247,34 @@ def test_invalid_lf_strict():
         lambda ex: isinstance(ex, python_http_parser.errors.NewlineError),
         errors
     ))
+
+def test_bare_cr_header():
+    """
+    Makes sure the parser fails if a bare CR at the end of a header value is encountered.
+    """
+    errors = []
+    msgs = [
+        b'GET /index.html HTTP/1.1\r\nHost: Trash\r\r',
+        b'HTTP/1.1 500 Not correct\r\nHost: Trash\r\r'
+    ]
+    index = 0
+
+    def on_error(err):
+        errors.append(err)
+
+    for msg in msgs:
+        if index % 2 == 1:
+            # Response parsing!
+            parser = python_http_parser.stream.HTTPParser(is_response=True)
+        else:
+            parser = python_http_parser.stream.HTTPParser()
+
+        parser.on('error', on_error)
+        parser.process(msg)
+        index += 1
+
+    assert len(errors) == 2
+    assert all(map(
+        lambda ex: isinstance(ex, python_http_parser.errors.NewlineError),
+        errors
+    ))
