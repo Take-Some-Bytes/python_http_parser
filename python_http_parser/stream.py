@@ -8,7 +8,7 @@ __all__ = [
 ]
 
 import string
-from typing import Optional, Tuple, NamedTuple
+from typing import Union, Optional, Tuple, NamedTuple
 
 from . import body, constants, errors
 from .constants import ParserState, ParserStrictness
@@ -92,12 +92,12 @@ class HTTPParser(EventEmitter):
         allow_lf = self.strictness != ParserStrictness.STRICT
 
         if self._state is ParserState.RECEIVING_METHOD:
-            result = _recv_method(buf)
-            if result is None:
+            m_result = _recv_method(buf)
+            if m_result is None:
                 # Incomplete.
                 return _ProcessResult(nparsed, buf)
 
-            method, parsed, remaining = result
+            method, parsed, remaining = m_result
             nparsed += parsed
             buf = remaining
 
@@ -105,12 +105,12 @@ class HTTPParser(EventEmitter):
             self._state = ParserState.RECEIVING_URI
 
         if self._state is ParserState.RECEIVING_URI:
-            result = _recv_uri(buf)
-            if result is None:
+            u_result = _recv_uri(buf)
+            if u_result is None:
                 # Incomplete.
                 return _ProcessResult(nparsed, buf)
 
-            uri, parsed, remaining = result
+            uri, parsed, remaining = u_result
             nparsed += parsed
             buf = remaining
 
@@ -118,12 +118,12 @@ class HTTPParser(EventEmitter):
             self._state = ParserState.PARSING_VERSION
 
         if self._state is ParserState.PARSING_VERSION:
-            result = _parse_version(buf)
-            if result is None:
+            v_result = _parse_version(buf)
+            if v_result is None:
                 # Incomplete.
                 return _ProcessResult(nparsed, buf)
 
-            version, remaining = result
+            version, remaining = v_result
             buf = remaining
 
             # There must be a newline after this.
@@ -161,12 +161,12 @@ class HTTPParser(EventEmitter):
         allow_lf = self.strictness != ParserStrictness.STRICT
 
         if self._state is ParserState.PARSING_VERSION:
-            result = _parse_version(buf)
-            if result is None:
+            v_result = _parse_version(buf)
+            if v_result is None:
                 # Incomplete.
                 return _ProcessResult(nparsed, buf)
 
-            version, remaining = result
+            version, remaining = v_result
             buf = remaining
 
             # Check that there is a space.
@@ -206,11 +206,11 @@ class HTTPParser(EventEmitter):
             # If a newline is received directly after the status code and the
             # parser strictness isn't ParserStrictness.STRICT, treat the reason
             # phrase as non-existent.
-            result = startswith_newline(buf, allow_lf)
-            if result is None:
+            n_result = startswith_newline(buf, allow_lf)
+            if n_result is None:
                 return _ProcessResult(nparsed, buf)
 
-            is_newline, newline_type = result
+            is_newline, newline_type = n_result
             if is_newline:
                 # Reason phrase doesn't exist.
                 # Oh well
@@ -238,12 +238,12 @@ class HTTPParser(EventEmitter):
             # if the reason phrase is incomplete.
             buf = buf[1:]
 
-            result = _recv_reason(buf, allow_lf)
-            if result is None:
+            r_result = _recv_reason(buf, allow_lf)
+            if r_result is None:
                 # Incomplete.
                 return _ProcessResult(nparsed, buf)
 
-            reason, reason_len, remaining = result
+            reason, reason_len, remaining = r_result
             # +1 because we need to account for the space.
             nparsed += reason_len + 1
             buf = remaining
@@ -265,11 +265,11 @@ class HTTPParser(EventEmitter):
         headers_over = False
         while not headers_over:
             if self._state is ParserState.PARSING_HEADER_NAME:
-                result = startswith_newline(buf, allow_lf)
-                if result is None:
+                n_result = startswith_newline(buf, allow_lf)
+                if n_result is None:
                     break
 
-                is_newline, newline_type = result
+                is_newline, newline_type = n_result
                 if is_newline:
                     # Headers are over!
                     nprocessed = 2 if newline_type is NewlineType.CRLF else 1
@@ -279,11 +279,11 @@ class HTTPParser(EventEmitter):
                     break
 
                 # Here comes another header name!
-                result = _recv_header_name(buf)
-                if result is None:
+                hn_result = _recv_header_name(buf)
+                if hn_result is None:
                     # Incomplete.
                     break
-                header_name, parsed, remaining = result
+                header_name, parsed, remaining = hn_result
                 nparsed += parsed
                 buf = remaining
 
@@ -291,11 +291,11 @@ class HTTPParser(EventEmitter):
                 self._state = ParserState.PARSING_HEADER_VAL
 
             if self._state is ParserState.PARSING_HEADER_VAL:
-                result = _recv_header_value(buf, allow_lf)
-                if result is None:
+                hv_result = _recv_header_value(buf, allow_lf)
+                if hv_result is None:
                     # Incomplete.
                     break
-                header_val, parsed, remaining = result
+                header_val, parsed, remaining = hv_result
                 nparsed += parsed
                 buf = remaining
 
@@ -391,7 +391,7 @@ class HTTPParser(EventEmitter):
         self._body_processor = None
         self._state = ParserState.EMPTY
 
-    def process(self, data: memoryview) -> int:
+    def process(self, data: Union[bytes, bytearray, memoryview]) -> int:
         """Process the contents of ``data`` as part of the HTTP message.
 
         Returns the number of bytes processed. Any unprocessed bytes must
@@ -735,7 +735,7 @@ def _recv_header_value(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
                 'Invalid characters in header value!')
 
         # We has obsolete text.
-        return _ParseResult('', nparsed, buf)
+        return _ParseResult(b'', nparsed, buf)
 
     return _ParseResult(header_val, nparsed, buf)
 
