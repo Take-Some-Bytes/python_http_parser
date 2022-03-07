@@ -88,6 +88,8 @@ class HTTPParser(EventEmitter):
 
         Internal method. All errors will be propagated back to the caller.
         """
+        # We don't really care about too many local variables.
+        # pylint: disable=R0914
         nparsed = 0
         allow_lf = self.strictness != ParserStrictness.STRICT
 
@@ -154,9 +156,8 @@ class HTTPParser(EventEmitter):
 
         Internal method. All errors will be propagated back to the caller.
         """
-        # It's sad we have to do this, but we have 7 returns here, 1 more than
-        # PyLint's limit.
-        # pylint: disable=too-many-return-statements
+        # We don't care about that here either.
+        # pylint: disable=R0914,R0911
         nparsed = 0
         allow_lf = self.strictness != ParserStrictness.STRICT
 
