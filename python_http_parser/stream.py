@@ -591,12 +591,14 @@ def _recv_reason(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
     to make the reason phrase optional, you must check for its existence
     yourself.
 
+    This function will "eat" (i.e. ignore and drop) any whitespace that appears
+    at the start and end of the reason phrase.
+
     Returns the reason phrase and an integer representing the number of
     bytes parsed.
     """
     nparsed = 0
     cr_index = buf.find(b'\r')
-    crlf_index = cr_index
     if cr_index >= 0:
         if len(buf) == cr_index + 1:
             # We're gonna get an IndexError.
@@ -606,12 +608,12 @@ def _recv_reason(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
             # Bare CR!
             raise errors.NewlineError('Expected CRLF, received bare CR.')
 
-    if crlf_index < 0:
+    if cr_index < 0:
         # Try getting an LF.
         lf_index = buf.find(b'\n')
         if lf_index < 0:
             # Hmmm...
-            if len(buf) > constants.MAX_HEADER_VAL_SIZE:
+            if len(buf) > constants.MAX_REASON_LEN:
                 # There should be a newline, since there are many more
                 # characters than the maximum allowed in a header value.
                 raise errors.InvalidStatus('Reason phrase too large!')
@@ -624,19 +626,16 @@ def _recv_reason(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
 
         # We have an LF!
         nparsed += lf_index + 1
-        if lf_index > constants.MAX_HEADER_VAL_SIZE:
+        if lf_index > constants.MAX_REASON_LEN:
             raise errors.InvalidStatus('Reason phrase too large!')
-
-        reason = buf[:lf_index]
-        buf = buf[nparsed:]
     else:
         # We have a CRLF.
-        nparsed += crlf_index + 2
-        if crlf_index > constants.MAX_HEADER_VAL_SIZE:
+        nparsed += cr_index + 2
+        if cr_index > constants.MAX_REASON_LEN:
             raise errors.InvalidStatus('Reason phrase too large!')
 
-        reason = buf[:crlf_index]
-        buf = buf[nparsed:]
+    reason = buf[:nparsed].strip()
+    buf = buf[nparsed:]
 
     if not _is_vchar_or_whsp(reason):
         # Check for obsolete text.
