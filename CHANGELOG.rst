@@ -17,6 +17,8 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
 - Replaced ``script-run`` with a ``Makefile``. GnuMake is available on both Windows and \*nix
   systems, while \*nix styled shell script is not.
 - Used f-strings_ instead of ``str.format`` where string formatting is required.
+- Used native |bytes|_ type instead of custom class for manipulating input bytes in
+  the ``HTTPParser`` class.
 
 ------------------------
  `v0.4.1`_ - 2021-07-31
@@ -202,6 +204,7 @@ Removed:
 .. |3| replace:: #3
 
 .. |mypy| replace:: ``mypy``
+.. |bytes| replace:: ``bytes``
 .. |typing| replace:: ``typing``
 .. |parse()| replace:: ``parse()``
 .. |HTTPParser| replace:: ``HTTPParser``
@@ -218,6 +221,7 @@ Removed:
 .. _f-strings: https://www.python.org/dev/peps/pep-0498/
 .. _mypy: https://pypi.org/project/mypy/
 .. _typing: https://docs.python.org/3/library/typing.html
+.. _bytes: https://docs.python.org/3/library/stdtypes.html#bytes
 .. _typing_extensions: https://pypi.org/project/typing_extensions/
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html
