@@ -12,7 +12,7 @@ check-build:
 	python -m twine check dist/*
 
 build:
-	python -m build -s -w -o ./dist
+	python -m build -o ./dist
 
 upload:
 	python -m twine upload -r pypi dist/*
