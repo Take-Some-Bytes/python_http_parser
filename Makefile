@@ -3,6 +3,11 @@
 BENCH_MSG_ID?=0
 BENCH_MODE?=both
 
+clean-build:
+	rm -rf build
+	rm -rf dist
+	rm -rf python_http_parser.egg-info
+
 check-build:
 	python -m twine check dist/*
 
