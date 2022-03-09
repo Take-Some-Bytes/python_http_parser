@@ -11,6 +11,10 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
  Unreleased
 ------------
 
+------------------------
+ `v0.4.2`_ - 2022-03-09
+------------------------
+
 ~~~~~~~~~~
  Changed:
 ~~~~~~~~~~
@@ -239,10 +243,12 @@ Removed:
 .. _v0.3.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.3.0
 .. _v0.3.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.3.1
 .. _v0.4.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.4.0
-.. _v0.4.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.4.0
+.. _v0.4.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.4.1
+.. _v0.4.2: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.4.2
 
 .. Other links.
 .. Version v0.4.1 links.
+
 .. _BodyProcessor-041: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/body.rst
 .. _BodyProcessorRequired-041: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/errors.rst#bodyprocesorrequired
 

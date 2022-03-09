@@ -1,7 +1,7 @@
 =========================================
  Module ``python_http_parser.constants``
 =========================================
-Version v0.4.1.
+Version v0.4.2.
 
 The ``python_http_parser.constants`` module houses various constants used in ``python_http_parser``.
 
@@ -226,11 +226,11 @@ above integer is equivalent to 16KiB
 
 .. _int: https://docs.python.org/3/library/functions.html#int
 .. _str: https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str
-.. _parse(): https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/index.rst#parsemsg-strictness_level-is_response
+.. _parse(): https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.2/docs/index.rst#parsemsg-strictness_level-is_response
 .. _IntEnum: https://docs.python.org/3/library/enum.html#enum.IntEnum
-.. _HTTPParser: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/stream.rst#class-httpparser
-.. _BodyProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/body.rst#base-class-bodyprocessor
-.. _ChunkedProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.1/docs/modules/body.rst#class-chunkedprocessor
+.. _HTTPParser: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.2/docs/modules/stream.rst#class-httpparser
+.. _BodyProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.2/docs/modules/body.rst#base-class-bodyprocessor
+.. _ChunkedProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.2/docs/modules/body.rst#class-chunkedprocessor
 
 .. _`HTTP status line`: https://tools.ietf.org/html/rfc7230#section-3.1.2
 .. _`HTTP request line`: https://tools.ietf.org/html/rfc7230#section-3.1.1
