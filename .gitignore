@@ -13,4 +13,4 @@ python_http_parser.egg-info
 .vscode
 
 # Ignore all virtual env stuff.
-*.env/
+.venv/
