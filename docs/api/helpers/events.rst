@@ -4,7 +4,7 @@
 
 .. py:module:: python_http_parser.helpers.events
 
-Version v0.4.2.
+Version |version|.
 
 The internal ``events`` module provides a custom EventEmitter implementation.
 This module is not public, and the only reason this is documented is because users

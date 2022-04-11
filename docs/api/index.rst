@@ -4,6 +4,8 @@
 
 .. py:module:: python_http_parser
 
+Version |version|.
+
 ---------
  Modules
 ---------

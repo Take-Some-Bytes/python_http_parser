@@ -4,7 +4,7 @@
 
 .. py:module:: python_http_parser.body
 
-Version v0.4.2.
+Version |version|.
 
 The ``python_http_parser.body`` module provides classes for processing HTTP
 bodies. It includes an Abstract Base Class called ``BodyProcessor``, which represents

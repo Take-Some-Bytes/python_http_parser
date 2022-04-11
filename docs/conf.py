@@ -23,6 +23,7 @@ author = 'Take-Some-Bytes'
 
 # The full version, including alpha/beta/rc tags
 release = 'main'
+version = 'main'
 
 
 # -- General configuration ---------------------------------------------------

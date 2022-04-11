@@ -4,7 +4,7 @@
 
 .. py:module:: python_http_parser.constants
 
-Version v0.4.2.
+Version |version|.
 
 The ``python_http_parser.constants`` module houses various constants used in ``python_http_parser``.
 

@@ -4,7 +4,7 @@
 
 .. py:module:: python_http_parser.stream
 
-Version v0.4.2.
+Version |version|.
 
 The ``python_http_parser.stream`` module contains classes for incremental processing
 of HTTP messages, namely, the |HTTPParser|_ class.

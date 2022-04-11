@@ -4,7 +4,7 @@
 
 .. py:module:: python_http_parser.errors
 
-Version v0.4.2.
+Version |version|.
 
 The ``python_http_parser.errors`` module houses various errors this module could raise.
 
