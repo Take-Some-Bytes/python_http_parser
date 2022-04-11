@@ -1,6 +1,9 @@
-====================================
- Module ``python_http_parser.body``
-====================================
+======================================================
+ ``python_http_parser.body`` - Processing HTTP bodies
+======================================================
+
+.. py:module:: python_http_parser.body
+
 Version v0.4.2.
 
 The ``python_http_parser.body`` module provides classes for processing HTTP

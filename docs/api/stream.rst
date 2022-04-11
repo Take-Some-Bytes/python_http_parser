@@ -1,6 +1,9 @@
-======================================
- Module ``python_http_parser.stream``
-======================================
+======================================================
+ ``python_http_parser.stream`` - Stream-based parsing
+======================================================
+
+.. py:module:: python_http_parser.stream
+
 Version v0.4.2.
 
 The ``python_http_parser.stream`` module contains classes for incremental processing

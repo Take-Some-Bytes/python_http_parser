@@ -1,6 +1,9 @@
-==========================
- Helper module ``events``
-==========================
+========================================
+ ``events`` - Synchronous events helper
+========================================
+
+.. py:module:: python_http_parser.helpers.events
+
 Version v0.4.2.
 
 The internal ``events`` module provides a custom EventEmitter implementation.

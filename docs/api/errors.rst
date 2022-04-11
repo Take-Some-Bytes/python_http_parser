@@ -1,6 +1,9 @@
-======================================
- Module ``python_http_parser.errors``
-======================================
+=============================================
+ ``python_http_parser.errors`` - Error types
+=============================================
+
+.. py:module:: python_http_parser.errors
+
 Version v0.4.2.
 
 The ``python_http_parser.errors`` module houses various errors this module could raise.

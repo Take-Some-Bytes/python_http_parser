@@ -1,6 +1,6 @@
-================================
- Package ``python_http_parser``
-================================
+====================
+ Python HTTP Parser
+====================
 The ``python_http_parser`` package provides classes and functions for parsing HTTP
 messages. This package aims to provide a usable, performant (in terms of Python)
 API, written purely in Python. As of right now, this package is *very* incomplete, and should not,
@@ -20,17 +20,14 @@ Sub-modules must be imported individually
 - `Source code`_ (hosted on GitHub).
 - `Changelog`_.
 
+---------------
+ Documentation
+---------------
+
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
-   api/body
-   api/constants
-   api/errors
-   api/stream
-   api/helpers/events
-
-Indices and tables
-==================
+   api/index
 
 * :ref:`genindex`
 * :ref:`modindex`

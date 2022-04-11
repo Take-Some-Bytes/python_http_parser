@@ -1,6 +1,9 @@
-=========================================
- Module ``python_http_parser.constants``
-=========================================
+======================================================
+ ``python_http_parser.constants`` - Library constants
+======================================================
+
+.. py:module:: python_http_parser.constants
+
 Version v0.4.2.
 
 The ``python_http_parser.constants`` module houses various constants used in ``python_http_parser``.
@@ -18,6 +21,8 @@ of public and stable parsing regexes.
   if a line conforms to the structure of a `HTTP request line`_.
 
 These regexes are only used in the |parse()|_ function.
+
+.. _parser-strictness-section:
 
 -----------------------------
  Parser Strictness Constants
