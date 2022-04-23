@@ -23,8 +23,8 @@ test:
 lint:
 	python -m pylint ./tests
 	python -m pylint ./python_http_parser
-	python -m rstcheck ./**.rst
-	python -m rstcheck ./docs/**.rst
+	rstcheck $(wildcard ./*.rst)
+	rstcheck $(wildcard ./docs/*.rst)
 
 typecheck:
 	python -m mypy .
