@@ -32,8 +32,8 @@ jobs:
           python -m pip install -r requirements/linting.txt
       - name: Lint RST
         run: |
-          python -m rstcheck ./**.rst
-          python -m rstcheck ./docs/**.rst
+          rstcheck ./**.rst
+          rstcheck ./docs/**.rst
       - name: Lint code
         run: |
           python -m pylint ./python_http_parser
