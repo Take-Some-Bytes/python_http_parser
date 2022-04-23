@@ -15,114 +15,110 @@ a generic class that processes HTTP bodies, and two concrete classes, ``FixedLen
  Abstract Base Classes
 -----------------------
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- Base Class ``BodyProcessor``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The ``BodyProcessor`` ABC represents a generic class that processes HTTP bodies.
-All concrete classes in this module implement this class.
+.. py:class:: BodyProcessor
 
-Required Methods
-==================
+   The ``BodyProcessor`` ABC represents a generic class that processes HTTP bodies.
+   All concrete classes in this module implement this class.
 
-Abstract ``processor.process(chunk, allow_lf)``
--------------------------------------------------
-- ``chunk`` |bytes|_ The next chunk of data to process.
-- ``allow_lf`` |bool|_ Whether to allow LF instead of CRLF.
-- Returns: |int|_ The number of bytes processed.
+    .. py:method:: process(chunk: bytes, allow_lf: bool) -> int
 
-This method is called whenever more data is available to be processed as part of the HTTP
-body. Implementors may ignore the ``allow_lf`` parameter if it does not apply to their
-implementation.
+      Process the next chunk as part of the HTTP body.
 
-It is recommended that buffering of data should not be performed. Instead, implementors
-should leave buffering up to the caller, and return the number of bytes processed so that
-the caller could calculate how many bytes to buffer.
+      :abstractmethod:
+      :param chunk: The next chunk of data to process.
+      :param allow_lf: Whether to allow LF-style line endings.
+      :type chunk: |bytes|_
+      :type allow_lf: |bool|_
+      :returns: The number of bytes processed.
+      :rtype: |int|_
 
-When more data is available, implementors should call the function stored in
-``processor.callbacks['data']``, with the processed data as its sole argument.
+      This method is called whenever more data is available to be processed as part of the HTTP
+      body. Implementors may ignore the ``allow_lf`` parameter if it does not apply to their
+      implementation.
 
-When an error occurs, implementors should call the function stored in
-``processor.callbacks['error']``, with the error that occurred as its sole argument.
+      It is recommended that buffering of data should not be performed. Instead, implementors
+      should leave buffering up to the caller, and return the number of bytes processed so that
+      the caller could calculate how many bytes to buffer.
 
-When the HTTP body is finished, implementors should call the function stored in
-``processor.callbacks['finished']``, with no arguments.
+      When more data is available, implementors should call the function stored in
+      ``processor.callbacks['data']``, with the processed data as its sole argument.
 
-Provided Methods
-==================
+      When an error occurs, implementors should call the function stored in
+      ``processor.callbacks['error']``, with the error that occurred as its sole argument.
 
-``processor.on_data(callback)``
----------------------------------
-- ``callback`` |Callable|_ Callback signature:
+      When the HTTP body is finished, implementors should call the function stored in
+      ``processor.callbacks['finished']``, with no arguments.
+   
+   .. py:method:: on_data(callback: Callable[bytes]) -> None
 
-  - ``chunk`` |bytes|_ The processed data.
-  - Returns: ``<None>``
+      Register a callback to be called when more processed data is available.
 
-Set the callback that will be called when more processed data is available. The callback is
-stored in ``processor.callbacks['data']``.
+      :param callback: The function to invoke.
+      :rtype: ``<None>``
 
-Implementors should not override this method.
+      Set the callback that will be called when more processed data is available. The callback is
+      stored in ``processor.callbacks['data']``.
 
-``processor.on_error(callback)``
-----------------------------------
-- ``callback`` |Callable|_ Callback signature:
+      Implementors should not override this method.
 
-  - ``err`` |Exception|_ The error that occurred.
-  - Returns: ``<None>``
+   .. py:method:: on_error(callback: Callable[Exception]) -> None
 
-Set the callback that will be called when an error occurs. The callback is stored at
-``processor.callbacks['error']``.
+      Register a callback to be called when an exception occurs.
 
-Implementors should not override this method.
+      :param callback: The function to invoke.
+      :rtype: ``<None>``
 
-``processor.on_finished(callback)``
--------------------------------------
-- ``callback`` |Callable|_ Callback signature:
+      Set the callback that will be called when an error occurs. The callback is stored at
+      ``processor.callbacks['error']``.
 
-  - Returns: ``<None>``
+      Implementors should not override this method.
 
-Set the callback that will be called when the HTTP body is finished. The callback is stored
-at ``processor.callbacks['finished']``.
+   .. py:method:: on_finished(callback: Callable[Exception]) -> None
 
-Implementors should not override this method.
+      Register a callback to be called when the body processing completes.
+
+      :param callback: The function to invoke.
+      :rtype: ``<None>``
+
+      Set the callback that will be called when the HTTP body is finished. The callback is stored
+      at ``processor.callbacks['finished']``.
+
+      Implementors should not override this method.
 
 ------------------
  Concrete Classes
 ------------------
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- Class ``FixedLenProcessor``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The ``FixedLenProcessor`` class represents a body processor which receives HTTP bodies of
-a fixed length.
+.. py:class:: FixedLenProcessor(body_len: int)
+   
+   The ``FixedLenProcessor`` class represents a body processor which receives HTTP bodies of
+   a fixed length.
 
-This class does nothing but count received bytes and compare it to the expected length of
-the HTTP body.
+   This class does nothing but count received bytes and compare it to the expected length of
+   the HTTP body.
 
-``FixedLenProcessor.__init__(body_len)``
-==========================================
-- ``body_len`` |int|_ The expected length of the body.
+   Implements :py:class:`BodyProcessor`.
 
-Create a new ``FixedLenProcessor``. ``body_len`` must be an integer representing
-the length of the HTTP body, as specified in (for example) the Content-Length header.
+   :param body_len: The expected length of the body.
+   :type body_len: |int|_
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- Class ``ChunkedProcessor``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The ``ChunkedProcessor`` class represents a body processor which receives chunked HTTP bodies.
-Use this class when you receive a Transfer-Encoding: chunked header.
+   To construct a ``FixedLenProcessor``, one must call the constructor with the expected length
+   of the HTTP body as an |int|_.
 
-This class does not place limits on the number of chunks it will accept. It does, however,
-place a limit on the maximum size of a chunk: 16MiB. If any chunk is received that is larger
-than that, the processor will immediately error out.
+.. py:class:: ChunkedProcessor
 
-This class allows chunk extensions, but does not parse them. Chunk extensions are limited to
-4KiB per chunk.
+  The ``ChunkedProcessor`` class represents a body processor which receives chunked HTTP bodies.
+  Use this class when a Transfer-Encoding: chunked header is received.
 
-``ChunkedProcessor.__init__()``
-==========================================
-Create a new ``ChunkedProcessor``.
+  This class does not place limits on the number of chunks it will accept. It does, however,
+  place a limit on the maximum size of a chunk: 16MiB. If any chunk is received that is larger
+  than that, the processor will immediately error out.
 
-This function accepts no arguments.
+  This class allows chunk extensions, but does not parse them. Chunk extensions are limited to
+  4KiB per chunk. Chunk extensions currently cannot be accessed; this is a known limitation. A
+  fix is expected sometime in the future.
+
+  Implements :py:class:`BodyProcessor`.
 
 .. |int| replace:: ``<int>``
 .. |bool| replace:: ``<bool>``
