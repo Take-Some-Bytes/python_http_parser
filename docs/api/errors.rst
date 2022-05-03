@@ -120,8 +120,7 @@ EBODYPROCESSOR    BodyProcessorRequired
    Raised when chunk extensions are too large.
 
    As the |ChunkedProcessor| does not *parse* chunk extensions, this error is only raised
-   if the size of chunk extensions exceed the
-   :py:data:`maximum <python_http_parser.constants.MAX_CHUNK_EXTENSION_SIZE>`.
+   if the size of chunk extensions exceed the :ref:`maximum <chunk-extension-max>`.
 
 .. py:exception:: BodyProcessorRequired
    

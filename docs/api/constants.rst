@@ -163,6 +163,8 @@ elements of a HTTP message. The limits are listed below.
    exactly 7 hexadecimal digits (0x1000000), the |ChunkedProcessor| will reject any chunk
    size with more than 7 digits
 
+.. _chunk-extension-max:
+
 .. py:data:: MAX_CHUNK_EXTENSION_SIZE: Final[4096]
 
    The maximum of chunk extensions per chunk (4KiB). Parsing is not performed, so
