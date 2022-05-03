@@ -6,7 +6,7 @@
 
 Version |version|.
 
-The ``python_http_parser.errors`` module houses various errors this module could raise.
+The ``python_http_parser.errors`` module houses various exceptions this module could raise.
 
 -------------------
 ``.code`` property
@@ -36,110 +36,102 @@ ECHUNKEXTS        InvalidChunkExtensions
 EBODYPROCESSOR    BodyProcessorRequired
 ================ ========================
 
-~~~~~~~~~~~~~~~~~
- ``LengthError``
-~~~~~~~~~~~~~~~~~
-Raised when something length-related fails, e.g. a header line is too short.
+.. py:exception:: LengthError
 
-~~~~~~~~~~~~~~~~~~
- ``ParsingError``
-~~~~~~~~~~~~~~~~~~
-The generic "catch-all" exception that is raised when there is no other appropriate
-exception to raise.
+   Raised when something length-related fails.
 
-**NOTE**: ``ParsingError`` *may* be slowly replaced by other more specific exception
-classes in the long term.
+   For example, if a header line is too short.
 
-~~~~~~~~~~~~~~~~~~
- ``NewlineError``
-~~~~~~~~~~~~~~~~~~
-Raised when something related to newlines fails.
+   This is only raised by the |parse()| function.
 
-~~~~~~~~~~~~~~~~~~~~~~
- ``FatalParsingError``
-~~~~~~~~~~~~~~~~~~~~~~
-A fatal variation of ``ParsingError``; ``FatalParsingError`` s raised cannot be ignored.
+.. py:exception:: ParsingError
 
-``FatalParsingError`` is currently not raised.
+   The generic "catch-all" exception that is raised when there is no other appropriate
+   exception to raise.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
- ``InvalidStructureError``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Raised when something doesn't match an expected structure, e.g. when the request line
-is not in the correct format.
+   **NOTE**: ``ParsingError`` *may* be slowly replaced by other more specific exception
+   classes in the long term.
 
-~~~~~~~~~~~~~~~
- ``DoneError``
-~~~~~~~~~~~~~~~
-Raised when a parser/processor is already done parsing/processing, but calls were made
-to process/parse more bytes.
+   This is only raised by the |parse()| function.
 
-~~~~~~~~~~~~~~~~~~~~
- ``InvalidVersion``
-~~~~~~~~~~~~~~~~~~~~
-Raised when the received HTTP version is invalid.
+.. py:exception:: NewlineError
 
-~~~~~~~~~~~~~~~~~~~
- ``InvalidStatus``
-~~~~~~~~~~~~~~~~~~~
-Raised when the received HTTP status code is invalid.
+   Raised when something related to newlines fails.
 
-~~~~~~~~~~~~~~~~~~~~
- ``UnexpectedChar``
-~~~~~~~~~~~~~~~~~~~~
-Raised when an unexpected character is encountered.
+   For example, if a bare CR is received, or if LF is received in strict mode.
 
-~~~~~~~~~~~~~~~~~~
- ``InvalidToken``
-~~~~~~~~~~~~~~~~~~
-Raised when non-|HTTP token|_ characters are received where a token is required.
+.. py:exception:: FatalParsingError
 
-~~~~~~~~~~~~~~~~
- ``InvalidURI``
-~~~~~~~~~~~~~~~~
-Raised when non-URI characters are received where a URI is required.
+   A fatal variation of ``ParsingError``; ``FatalParsingError`` s raised cannot be ignored.
 
-As the |HTTPParser|_ does not *parse* URIs, this error is only raised when invalid
-*characters* are received.
+   ``FatalParsingError`` is currently not raised.
 
-~~~~~~~~~~~~~~~~~~~~~~
- ``InvalidHeaderVal``
-~~~~~~~~~~~~~~~~~~~~~~
-Raised when invalid characters are encountered the value of a HTTP header.
+.. py:exception:: InvalidStructureError
 
-~~~~~~~~~~~~~~~~~~
- ``InvalidChunk``
-~~~~~~~~~~~~~~~~~~
-Raised when a chunk that is being processed by the |ChunkedProcessor|_ has syntax
-errors (e.g. missing a newline).
+   Raised when something doesn't match an expected structure.
 
-~~~~~~~~~~~~~~~~~~~~~~
- ``InvalidChunkSize``
-~~~~~~~~~~~~~~~~~~~~~~
-Raised a chunk size is invalid (e.g. has invalid characters or is too large).
+   For example if the request line is not in the correct format.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- ``InvalidChunkExtensions``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Raised when chunk extensions are too large.
+   This is only raised by the |parse()| function.
 
-As the |ChunkedProcessor|_ does not *parse* chunk extensions, this error is only raised the
-size of chunk extensions exceed the maximum_.
+.. py:exception:: DoneError
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
- ``BodyProcessorRequired``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Raised when a |BodyProcessor|_ is required, but none was set.
+   Raised when a parser/processor is already done parsing/processing, but calls were made
+   to process/parse more bytes.
+
+.. py:exception:: InvalidVersion
+
+   Raised when the received HTTP version is invalid.
+
+.. py:exception:: InvalidStatus
+
+   Raised when the received HTTP status code is invalid.
+
+.. py:exception:: UnexpectedChar
+
+   Raised when an unexpected character is encountered.
+
+.. py:exception:: InvalidToken
+
+   Raised when non-|HTTP token|_ characters are received where a token is required.
+
+.. py:exception:: InvalidURI
+
+   Raised when non-URI characters are received where a URI is required.
+
+   As the :py:class:`HTTPParser <python_http_parser.stream.HTTPParser>` does not
+   *parse* URIs, this error is only raised when invalid *characters* are received.
+
+.. py:exception:: InvalidHeaderVal
+
+   Raised when invalid characters are encountered in the value of a HTTP header.
+
+.. py:exception:: InvalidChunk
+
+   Raised when a chunk that is being processed by the |ChunkedProcessor| has syntax
+   errors (e.g. missing a newline).
+
+.. py:exception:: InvalidChunkSize
+
+   Raised when a chunk size is invalid (e.g. has invalid characters or is too large).
+
+.. py:exception:: InvalidChunkExtensions
+
+   Raised when chunk extensions are too large.
+
+   As the |ChunkedProcessor| does not *parse* chunk extensions, this error is only raised
+   if the size of chunk extensions exceed the
+   :py:data:`maximum <python_http_parser.constants.MAX_CHUNK_EXTENSION_SIZE>`.
+
+.. py:exception:: BodyProcessorRequired
+   
+   Raised when a :py:class:`BodyProcessor <python_http_parser.body.BodyProcessor>` is required,
+   but none was set.
 
 .. Hack to make sure putting a hyphen before a hyperlink doesn't break anything.
 .. |HTTP token| replace:: HTTP token
-.. |HTTPParser| replace:: ``HTTPParser``
 .. |BodyProcessor| replace:: ``BodyProcessor``
-.. |ChunkedProcessor| replace:: ``ChunkedProcessor``
-
-.. _HTTPParser: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.2/docs/modules/stream.rst
-.. _BodyProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.2/docs/modules/body.rst
-.. _ChunkedProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.2/docs/modules/body.rst#class-chunkedprocessor
-.. _maximum: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.2/docs/modules/constants.rst#max_chunk_extension_size
+.. |ChunkedProcessor| replace:: :py:class:`ChunkedProcessor <python_http_parser.body.ChunkedProcessor>`
+.. |parse()| replace:: :py:func:`parse() <python_http_parser.parse>`
 
 .. _`HTTP token`: https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6
