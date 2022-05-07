@@ -129,7 +129,6 @@ EBODYPROCESSOR    BodyProcessorRequired
 
 .. Hack to make sure putting a hyphen before a hyperlink doesn't break anything.
 .. |HTTP token| replace:: HTTP token
-.. |BodyProcessor| replace:: ``BodyProcessor``
 .. |ChunkedProcessor| replace:: :py:class:`ChunkedProcessor <python_http_parser.body.ChunkedProcessor>`
 .. |parse()| replace:: :py:func:`parse() <python_http_parser.parse>`
 
