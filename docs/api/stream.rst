@@ -190,7 +190,7 @@ of HTTP messages, namely, the :py:class:`HTTPParser` class.
           parser = HTTPParser(is_response=False)
 
           # Set up the buffer.
-          buf = bytearray(256)
+          buf = bytearray(2048)
           view = memoryview(buf)
           buf_len = 0
 
