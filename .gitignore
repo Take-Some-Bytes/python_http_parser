@@ -3,14 +3,13 @@ dist/
 build/
 python_http_parser.egg-info
 
-# Oh, and please no .pyc files.
 **.pyc
 
-# Please no .DS_STORE files
 .DS_STORE
 
-# VSCode files could stay out.
 .vscode
 
-# Ignore all virtual env stuff.
 .venv/
+
+# No sphinx.
+docs/_build
