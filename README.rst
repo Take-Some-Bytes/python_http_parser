@@ -61,7 +61,7 @@ Python >=3.6 is required to use this package.
 
 .. _`CONTRIBUTING.rst`: https://github.com/Take-Some-Bytes/python_http_parser/blob/main/CONTRIBUTING.rst
 .. _`CHANGELOG`: https://github.com/Take-Some-Bytes/python_http_parser/blob/main/CHANGELOG.rst
-.. _here: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.2/docs/README.rst
+.. _here: https://python-http-parser.readthedocs.io/en/latest/
 
 .. _`RFC 7230`: https://tools.ietf.org/html/rfc7230
 .. _typing_extensions: https://pypi.org/project/typing_extensions/
