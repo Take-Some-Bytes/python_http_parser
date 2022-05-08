@@ -12,6 +12,15 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
 ------------
 
 ------------------------
+ `v0.4.3`_ - 2022-05-07
+------------------------
+
+~~~~~~~~~~
+ Changed:
+~~~~~~~~~~
+- Migrated API documentation to Sphinx! The documentation is also hosted on readthedocs_.
+
+------------------------
  `v0.4.2`_ - 2022-03-09
 ------------------------
 
@@ -229,6 +238,7 @@ Removed:
 .. _typing_extensions: https://pypi.org/project/typing_extensions/
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html
+.. _readthedocs: https://python-http-parser.readthedocs.io/en/stable/
 
 .. Issue numbers links.
 
@@ -245,6 +255,7 @@ Removed:
 .. _v0.4.0: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.4.0
 .. _v0.4.1: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.4.1
 .. _v0.4.2: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.4.2
+.. _v0.4.3: https://github.com/Take-Some-Bytes/python_http_parser/tree/v0.4.3
 
 .. Other links.
 .. Version v0.4.1 links.

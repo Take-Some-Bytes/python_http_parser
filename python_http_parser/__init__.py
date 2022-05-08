@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 # The version...
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 # Imports.
 from . import constants, errors, utils
