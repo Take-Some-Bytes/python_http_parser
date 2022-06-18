@@ -7,6 +7,7 @@ __all__ = [
     'HTTPParser'
 ]
 
+import functools
 import string
 from typing import Union, Optional, Tuple, NamedTuple
 
@@ -475,6 +476,7 @@ def _skip_empty_lines(
     return None
 
 
+@functools.lru_cache
 def _parse_version(buf: bytes) -> Optional[Tuple[HTTPVersion, bytes]]:
     """Parse the HTTP version that exists in ``buf``."""
     if len(buf) < 8:
@@ -498,19 +500,19 @@ def _parse_version(buf: bytes) -> Optional[Tuple[HTTPVersion, bytes]]:
     return (HTTPVersion(1, int(bytes([last_byte]))), buf[8:])
 
 
+@functools.lru_cache
 def _recv_method(buf: bytes) -> Optional[_ParseResult]:
     """Receive the HTTP request method in ``buf``.
 
     Returns a tuple containing the request method and the number of bytes parsed.
     """
     nparsed = 0
+
     space_index = buf.find(_SPACE)
     if space_index < 0:
-        # Before assuming it is incomplete, we have to check something.
         if len(buf) > constants.MAX_REQ_METHOD_LEN:
-            # There are way too many bytes.
             raise errors.InvalidToken('Request method too large!')
-        # Now we know it's incomplete.
+
         return None
 
     # The token needs to actually exist.
@@ -534,6 +536,7 @@ def _recv_method(buf: bytes) -> Optional[_ParseResult]:
     return _ParseResult(method, nparsed, buf)
 
 
+@functools.lru_cache
 def _recv_uri(buf: bytes) -> Optional[_ParseResult]:
     """Receive the HTTP request URI in ``buf``.
 
@@ -571,6 +574,7 @@ def _recv_uri(buf: bytes) -> Optional[_ParseResult]:
     return _ParseResult(uri, nparsed, buf)
 
 
+@functools.lru_cache
 def _recv_code(buf: bytes) -> Optional[int]:
     """Receive the HTTP status code in ``buf``."""
     if len(buf) < 3:
@@ -584,6 +588,7 @@ def _recv_code(buf: bytes) -> Optional[int]:
     return int(raw_code)
 
 
+@functools.lru_cache
 def _recv_reason(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
     """Receive the HTTP reason phrase.
 
@@ -649,6 +654,7 @@ def _recv_reason(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
     return _ParseResult(reason, nparsed, buf)
 
 
+@functools.lru_cache
 def _recv_header_name(buf: bytes) -> Optional[_ParseResult]:
     """Receive a HTTP header field name from ``buf``.
 
@@ -686,6 +692,7 @@ def _recv_header_name(buf: bytes) -> Optional[_ParseResult]:
     return _ParseResult(header_name, nparsed, buf)
 
 
+@functools.lru_cache
 def _recv_header_value(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
     """Receive a HTTP header field value from ``buf``.
 
@@ -746,28 +753,33 @@ def _recv_header_value(buf: bytes, allow_lf: bool) -> Optional[_ParseResult]:
     return _ParseResult(header_val, nparsed, buf)
 
 
+@functools.lru_cache
 def _is_token(_bytes: bytes) -> bool:
     """Are the bytes a valid HTTP token?"""
     # Delete all valid characters. Any characters left are invalid.
     return len(_bytes.translate(None, constants.TOKENS)) == 0
 
 
+@functools.lru_cache
 def _is_uri(_bytes: bytes) -> bool:
     """Could the bytes be a valid URI? (i.e. do the bytes have valid URI chars)."""
     # Delete all valid characters. Any characters left are invalid.
     return len(_bytes.translate(None, constants.URI_CHARS)) == 0
 
 
+@functools.lru_cache
 def _is_vchar_or_whsp(_bytes: bytes) -> bool:
     """Do the bytes only contain VCHARs and whitespace?"""
     return len(_bytes.translate(None, constants.VCHAR_OR_WSP)) == 0
 
 
+@functools.lru_cache
 def _is_obs_text(_bytes: bytes) -> bool:
     """Do the bytes only contain obsolete text?"""
     return len(_bytes.translate(None, constants.OBS_TXT)) == 0
 
 
+@functools.lru_cache
 def _are_digits(_bytes: bytes) -> bool:
     """Do the bytes only contain numerical characters?"""
     return len(_bytes.translate(None, constants.DIGITS)) == 0
