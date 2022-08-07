@@ -6,13 +6,13 @@ clean-build:
 	rm -rf python_http_parser.egg-info
 
 check-build:
-	python -m twine check dist/*
+	python -m twine check $(wildcard dist/*)
 
 build:
 	python -m build -o ./dist
 
 upload:
-	python -m twine upload -r pypi dist/*
+	python -m twine upload -r pypi $(wildcard dist/*)
 
 test:
 	python -m pytest tests
