@@ -15,7 +15,10 @@ upload:
 	python -m twine upload -r pypi dist/*
 
 test:
-	python -m pytest
+	python -m pytest tests
+
+bench:
+	python -m pytest bench
 
 lint:
 	python -m pylint ./tests
