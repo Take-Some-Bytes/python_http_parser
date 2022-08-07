@@ -1,2 +1,3 @@
 # Packages you'll need to test this project.
 pytest>=6.2.2
+pytest-benchmark>=3.4.1
