@@ -1,8 +1,5 @@
 # Shortcuts for running utility commands.
 
-BENCH_MSG_ID?=0
-BENCH_MODE?=both
-
 clean-build:
 	rm -rf build
 	rm -rf dist
@@ -28,11 +25,5 @@ lint:
 
 typecheck:
 	python -m mypy .
-
-bench:
-	python ./bench/run.py -t bench -i $(BENCH_MSG_ID) -m $(BENCH_MODE)
-
-profile:
-	python ./bench/run.py -t profile -i $(BENCH_MSG_ID) -m $(BENCH_MODE)
 
 .PHONY: check-build build upload test lint typecheck bench profile
