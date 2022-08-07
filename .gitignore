@@ -13,3 +13,6 @@ python_http_parser.egg-info
 
 # No sphinx.
 docs/_build
+
+# Benchmark results
+bench_results*.log
