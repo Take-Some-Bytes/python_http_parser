@@ -11,6 +11,14 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
  Unreleased
 ------------
 
+~~~~~~~~~~
+ Changed:
+~~~~~~~~~~
+- Migrated to |pytest-benchmark|_ for benchmarks. It's easier, more convenient, and we
+  don't have to maintain our own benchmark code.
+- Dependencies for building the documentation have been unpinned to avoid conflicts with
+  the root project.
+
 ------------------------
  `v0.4.3`_ - 2022-05-07
 ------------------------
@@ -224,6 +232,7 @@ Removed:
 .. |EventEmitter| replace:: ``EventEmitter``
 .. |NewlineError| replace:: ``NewlineError``
 .. |BodyProcessor| replace:: ``BodyProcessor``
+.. |pytest-benchmark| replace:: ``pytest-benchmark``
 .. |typing_extensions| replace:: ``typing_extensions``
 
 .. |BodyProcessor-041| replace:: ``BodyProcessor``
@@ -239,6 +248,7 @@ Removed:
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
 .. _Semantic Versioning: https://semver.org/spec/v2.0.0.html
 .. _readthedocs: https://python-http-parser.readthedocs.io/en/stable/
+.. _pytest-benchmark: https://pypi.org/project/pytest-benchmark/
 
 .. Issue numbers links.
 
@@ -271,6 +281,4 @@ Removed:
 .. _`body processors`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/body.rst
 .. _`constants`: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/constants.rst
 .. _NewlineError: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/errors.rst#newlineerror
-.. _`namedtuples`: https://docs.python.org/3/library/collections.html#collections.namedtuple
-.. _BodyProcessor: https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/modules/body.rst
 .. _parse(): https://github.com/Take-Some-Bytes/python_http_parser/blob/v0.4.0/docs/index.rst#parsemsg-strictness_level-is_response
