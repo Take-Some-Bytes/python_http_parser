@@ -38,7 +38,7 @@ Find the full documentation here_.
 ------------
 You could easily install this package with pip:
 
-.. code:: bash
+.. code:: shell
 
   $ pip install --upgrade python_http_parser
 
