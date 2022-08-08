@@ -19,6 +19,12 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
 - Dependencies for building the documentation have been unpinned to avoid conflicts with
   the root project.
 
+~~~~~~~~~
+ Removed
+~~~~~~~~~
+- Removed support for Python 3.6. This package is not guaranteed to work on Python versions
+  lower than 3.7.
+
 ------------------------
  `v0.4.3`_ - 2022-05-07
 ------------------------

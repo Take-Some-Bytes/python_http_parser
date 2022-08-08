@@ -55,7 +55,7 @@ compatiblity with Python versions earlier than 3.8, so it shouldn't add too much
 This project also requires some tools if you wish to develop or test the code--those requirements could
 be found in the ``/requirements`` folder.
 
-Python >=3.6 is required to use this package.
+Python >=3.7 is required to use this package.
 
 .. |typing_extensions| replace:: ``typing_extensions``
 

@@ -1,7 +1,7 @@
 """``python_http_parser`` constants."""
 
 from enum import Enum, IntEnum
-# Literal was added in Python 3.8. We need to support Python 3.6.
+# Literal was added in Python 3.8. We need to support Python 3.7.
 from typing_extensions import Literal
 
 # Constants.
