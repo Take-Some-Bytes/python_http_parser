@@ -10,6 +10,18 @@ ifeq ($(DETECTED_OS),Windows)
     SHELL := powershell.exe
 endif
 
+help:
+	@echo "Nothing specified, nothing done"
+	@echo "Available commands:"
+	@echo "  - clean-build: cleans build directories"
+	@echo "  - check-build: ensures built files are valid"
+	@echo "  - build: build python wheels and source dists"
+	@echo "  - upload: upload build to PyPI"
+	@echo "  - test: run PyTest unit tests"
+	@echo "  - bench: run benchmarks, powered by pytest-benchmark"
+	@echo "  - lint: lint Python and ReStructureText files"
+	@echo "  - typecheck: perform typechecking using mypy"
+
 clean-build:
 # These check for the existence of their respective directories.
 ifneq ($(wildcard build),)
@@ -46,4 +58,4 @@ lint:
 typecheck:
 	python -m mypy .
 
-.PHONY: check-build build upload test lint typecheck bench profile
+.PHONY: check-build build upload test lint typecheck bench profile help
