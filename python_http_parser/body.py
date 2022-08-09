@@ -17,8 +17,8 @@ from typing import Callable, List, Optional, Tuple
 # Compatibility requires us to use typing_extensions.
 from typing_extensions import TypedDict
 
-from . import bytedata, constants, errors
-from .helpers.newline import find_newline, is_newline
+from . import constants, errors
+from .helpers.newline import NewlineType, find_newline, startswith_newline
 
 
 class BodyProcessorCallbacks(TypedDict):
@@ -157,43 +157,55 @@ class ChunkedProcessor(BodyProcessor):
         self.expecting_extensions = False
         self.extensions: List[str] = []
 
-    def _parse_chunk_size(self, buf: bytedata.Bytes, allow_lf: bool) -> int:
-        """Parse a chunk's size. Return the number of bytes parsed."""
+    def _parse_chunk_size(self, buf: bytes, allow_lf: bool) -> Tuple[int, bytes]:
+        """
+        Parse a chunk's size.
+
+        Return the number of bytes parsed and the remaining bytes.
+        """
         nprocessed = 0
         result = _parse_chunk_size(buf, allow_lf)
         if result is None:
             # Incomplete.
-            return nprocessed
+            return (nprocessed, buf)
 
         chunk_size, parsed, expecting_extensions = result
+
         self.next_chunk_size = chunk_size
         self.expecting_extensions = expecting_extensions
         nprocessed += parsed
 
-        return nprocessed
+        return (nprocessed, buf[nprocessed:])
 
-    def _parse_chunk_extensions(self, buf: bytedata.Bytes, allow_lf: bool) -> int:
-        """Parse a chunk's extensions, if any. Return the number of bytes parsed."""
+    def _parse_chunk_extensions(self, buf: bytes, allow_lf: bool) -> Tuple[int, bytes]:
+        """
+        Parse a chunk's extensions, if any.
+
+        Return the number of bytes parsed and the remaining bytes.
+        """
         nprocessed = 0
 
         # Receive chunk extensions, but do not parse them.
         result = _recv_chunk_extensions(buf, allow_lf)
         if result is None:
             self.expecting_extensions = True
-            return nprocessed
+            return (nprocessed, buf)
         self.expecting_extensions = False
+
         extensions, parsed = result
         nprocessed += parsed
         if len(extensions) > 0:
             # We have extensions!
             self.extensions.append(extensions)
 
-        return nprocessed
+        return (nprocessed, buf[parsed:])
 
-    def _process_chunk(self, buf: bytedata.Bytes, allow_lf: bool) -> Optional[int]:
-        """Process a chunk which has size ``self.next_chunk_size``.
+    def _process_chunk(self, buf: bytes, allow_lf: bool) -> Optional[Tuple[int, bytes]]:
+        """
+        Process a chunk which has size ``self.next_chunk_size``.
 
-        None is returned if there is not enough data.
+        None is returned if there is not enough data. Returns the number of
+        bytes processed and the remaining bytes.
         """
         nprocessed = 0
         if self.next_chunk_size is None:
@@ -203,49 +215,42 @@ class ChunkedProcessor(BodyProcessor):
         if len(buf) < self.next_chunk_size:
             # Not enough data.
             return None
-        buf.advance(self.next_chunk_size)
+        # buf.advance(self.next_chunk_size)
         nprocessed += self.next_chunk_size
 
-        is_lf = is_newline(buf, b'\n')
-        is_crlf = is_newline(buf, b'\r\n')
-        if is_lf is None and is_crlf is None:
+        # Get the chunk's contents and drop them
+        chunk_contents = buf[:self.next_chunk_size]
+        buf = buf[self.next_chunk_size:]
+
+        # There should be a newline after the chunk contents
+        n_result = startswith_newline(buf, allow_lf)
+        if n_result is None:
             # Incomplete.
             return None
-        if not is_lf and not is_crlf:
-            # Hmm... let's see.
-            if len(buf) > self.next_chunk_size:
-                # There SHOULD be a newline.
-                raise errors.InvalidChunk(
-                    'Expected newline to signify end-of-chunk!')
-            # Otherwise, it's incomplete.
-            return None
-        if is_lf:
-            # Wild LF on the scene. Proceed with caution.
-            if not allow_lf:
-                raise errors.NewlineError(
-                    'CRLF is required.')
-            # All good.
-            nprocessed += 1
-            # Skip the last byte, which is a LF.
-            chunk = bytes(buf.slice()[:-1])
-        else:
-            # It's CRLF. No caution needed.
-            nprocessed += 2
-            # Ignore the last 2 bytes, which is CRLF.
-            chunk = bytes(buf.slice()[:-2])
+
+        is_newline, newline_type = n_result
+        if not is_newline:
+            # There MUST be a newline after a chunk
+            raise errors.InvalidChunk(
+                'Expected newline to signify end-of-chunk!')
+
+        # Process the newline
+        newline_len = 2 if newline_type is NewlineType.CRLF else 1
+        nprocessed += newline_len
+        buf = buf[newline_len:]
 
         if self.next_chunk_size == 0:
             # That was the last chunk.
             self.finished = True
             self.next_chunk_size = None
             self.callbacks['finished']()
-            return nprocessed
+            return (nprocessed, buf)
 
-        self.callbacks['data'](chunk)
+        self.callbacks['data'](chunk_contents)
         self.next_chunk_size = None
-        return nprocessed
+        return (nprocessed, buf)
 
-    def _process(self, buf: bytedata.Bytes, allow_lf: bool) -> int:
+    def _process(self, buf: bytes, allow_lf: bool) -> int:
         """Internal ``._process()`` method.
 
         Contains the processor directing logic. All errors will be propagated
@@ -256,13 +261,19 @@ class ChunkedProcessor(BodyProcessor):
         while not self.finished:
             if self.next_chunk_size is None:
                 # Parse chunk size.
-                nprocessed += self._parse_chunk_size(buf, allow_lf)
+                parsed, rest = self._parse_chunk_size(buf, allow_lf)
+
+                nprocessed += parsed
+                buf = rest
             if self.next_chunk_size is None:
                 # If there was not enough data to parse a full chunk size, don't go on.
                 break
             if self.expecting_extensions:
                 # We are expecting chunk extensions.
-                nprocessed += self._parse_chunk_extensions(buf, allow_lf)
+                parsed, rest = self._parse_chunk_extensions(buf, allow_lf)
+
+                nprocessed += parsed
+                buf = rest
             if self.expecting_extensions:
                 # There wasn't enough data.
                 break
@@ -272,13 +283,15 @@ class ChunkedProcessor(BodyProcessor):
                 # Not enough data.
                 break
 
-            nprocessed += ret
+            parsed, rest = ret
+
+            nprocessed += parsed
+            buf = rest
 
         return nprocessed
 
     def process(self, chunk: bytes, allow_lf: bool) -> int:
         """Process ``chunk`` as a part of the HTTP body."""
-        buf = bytedata.Bytes(chunk)
         if self.finished:
             self.callbacks['error'](errors.DoneError(
                 'BodyProcessor is finished.'))
@@ -289,7 +302,7 @@ class ChunkedProcessor(BodyProcessor):
             return -1
 
         try:
-            return self._process(buf, allow_lf)
+            return self._process(chunk, allow_lf)
         except (errors.NewlineError, errors.InvalidChunkSize,
                 errors.InvalidChunk, errors.InvalidChunkExtensions,
                 UnicodeDecodeError) as ex:
@@ -298,7 +311,7 @@ class ChunkedProcessor(BodyProcessor):
             return -1
 
 
-def _parse_chunk_size(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[int, int, bool]]:
+def _parse_chunk_size(buf: bytes, allow_lf: bool) -> Optional[Tuple[int, int, bool]]:
     """Parse and return the chunk size contained in ``buf``.
 
     Return a tuple containing the parsed chunk size, the number of bytes parsed,
@@ -306,14 +319,14 @@ def _parse_chunk_size(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[int
     None is returned if there weren't enough bytes.
     """
     nparsed = 0
-    lf_index = find_newline(buf, b'\n')
-    crlf_index = find_newline(buf, b'\r\n')
+
     semi_index = buf.find(_SEMI)
-    has_lf = bool(~lf_index)
-    has_crlf = bool(~crlf_index)
+    newline_idx, newline_type = find_newline(buf, allow_lf)
+
+    has_newline = bool(~newline_idx)
     has_semi = bool(~semi_index)
-    if not has_semi and not has_lf and not has_crlf:
-        # Hmmm...
+
+    if not has_semi and not has_newline:
         if len(buf) > constants.MAX_CHUNK_SIZE_DIGITS:
             # There should be enough bytes for a valid chunk size.
             raise errors.InvalidChunkSize('Chunk size too large!')
@@ -322,32 +335,22 @@ def _parse_chunk_size(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[int
 
     # Only assume there are chunk extensions if the semicolon appears
     # in front of the LF and CRLF (if any).
-    if (has_semi
-        and (semi_index < lf_index if has_lf else True)
-            and (semi_index < crlf_index if has_crlf else True)):
+    if has_semi and ((semi_index < newline_idx) or not has_newline):
         # There are chunk extensions.
         nparsed += semi_index
-        buf.advance(semi_index)
-        raw_chunk_size = bytes(buf.slice())
+        raw_chunk_size = buf[:semi_index]
         has_chunk_extensions = True
-    elif has_lf and not has_crlf:
-        # It's a wild LF on the scene.
-        if not allow_lf:
-            # LF is not allowed. CRLF forever!
-            raise errors.NewlineError('CRLF is required.')
-        # Chunk size is everything up to lf_index.
-        # Like always, +1 to include the LF, then [:-1] to ignore it.
-        nparsed += lf_index + 1
-        buf.advance(lf_index + 1)
-        raw_chunk_size = bytes(buf.slice()[:-1])
-        has_chunk_extensions = False
+
+        # Process the semicolon
+        nparsed += 1
     else:
-        # It's a CRLF. No caution needed.
-        # +2 to include the CRLF, then [:-2] to ignore it.
-        nparsed += crlf_index + 2
-        buf.advance(crlf_index + 2)
-        raw_chunk_size = bytes(buf.slice()[:-2])
+        # No chunk extensions
+        nparsed += newline_idx
+        raw_chunk_size = buf[:newline_idx]
         has_chunk_extensions = False
+
+        # Process the newline
+        nparsed += 2 if newline_type is NewlineType.CRLF else 1
 
     if not _are_hex_digits(raw_chunk_size):
         # Chunk size must only contain hexadecimal digits.
@@ -360,7 +363,7 @@ def _parse_chunk_size(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[int
     return (chunk_size, nparsed, has_chunk_extensions)
 
 
-def _recv_chunk_extensions(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tuple[str, int]]:
+def _recv_chunk_extensions(buf: bytes, allow_lf: bool) -> Optional[Tuple[str, int]]:
     """Receive all chunk extensions up to a newline. Return the extensions
     and number of bytes parsed.
 
@@ -368,12 +371,10 @@ def _recv_chunk_extensions(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tupl
     chunk extensions is limited to 4KiB.
     """
     nrecved = 0
-    lf_index = find_newline(buf, b'\n')
-    crlf_index = find_newline(buf, b'\r\n')
-    has_lf = bool(~lf_index)
-    has_crlf = bool(~crlf_index)
-    if not has_lf and not has_crlf:
-        # Hmm....
+
+    newline_idx, newline_type = find_newline(buf, allow_lf)
+    has_newline = bool(~newline_idx)
+    if not has_newline:
         if len(buf) > constants.MAX_CHUNK_EXTENSION_SIZE:
             # Chunk extensions are too large.
             raise errors.InvalidChunkExtensions(
@@ -381,33 +382,14 @@ def _recv_chunk_extensions(buf: bytedata.Bytes, allow_lf: bool) -> Optional[Tupl
 
         # Otherwise, incomplete.
         return None
-    if has_lf and not has_crlf:
-        # Wild LF on the scene. Proceed with caution.
-        if not allow_lf:
-            raise errors.NewlineError('CRLF is required.')
-        if lf_index == 0:
-            # There are zero chunk extensions.
-            nrecved += 1
-            buf.bump().slice()
-            return ('', nrecved)
 
-        # Everything up to lf_index are chunk extensions.
-        nrecved += lf_index + 1
-        buf.advance(lf_index + 1)
-        # Ignore the LF.
-        raw_extensions = bytes(buf.slice()[:-1])
-    else:
-        # It's a CRLF.
-        if crlf_index == 0:
-            # No chunk extensions.
-            nrecved += 2
-            buf.advance(2).slice()
-            return ('', nrecved)
+    nrecved += newline_idx
 
-        # +2 to include the CRLF, and [:-2] to ignore it.
-        nrecved += crlf_index + 2
-        buf.advance(crlf_index + 2)
-        raw_extensions = bytes(buf.slice()[:-2])
+    # Receive extensions
+    raw_extensions = buf[nrecved:]
+
+    # Account for the newline
+    nrecved += 2 if newline_type is NewlineType.CRLF else 1
 
     return (raw_extensions.decode('utf-8'), nrecved)
 
