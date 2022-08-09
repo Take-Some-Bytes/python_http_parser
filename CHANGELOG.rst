@@ -18,6 +18,8 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
   don't have to maintain our own benchmark code.
 - Dependencies for building the documentation have been unpinned to avoid conflicts with
   the root project.
+- Used native |bytes|_ type instead of custom class for manipulating input bytes in
+  the ``ChunkedProcessor`` body processor implementation.
 
 ~~~~~~~~~
  Removed
