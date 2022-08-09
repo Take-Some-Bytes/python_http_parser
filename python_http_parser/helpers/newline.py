@@ -3,9 +3,9 @@ from enum import Enum
 
 from typing import Optional, Tuple, Union, Sized
 # Use typing_extensions to maintain compatibility.
-from typing_extensions import Literal, SupportsIndex, Protocol
+from typing_extensions import SupportsIndex, Protocol
 
-from .. import bytedata, errors
+from .. import errors
 
 _LF = 0x0a
 _CR = 0x0d
@@ -20,60 +20,15 @@ class HasFind(Sized, Protocol):
         __end: Optional[SupportsIndex] = ...
     ) -> int: ...
 
+class HasStartswith(Sized, Protocol):
+    """A type that has a .startswith() method."""
+    # pylint: disable=abstract-method,missing-function-docstring,too-few-public-methods
 
-def find_newline(_bytes: HasFind, newline_type: Literal[b'\n', b'\r\n']) -> int:
-    """
-    Look for the specified newline in ``_bytes``. Return the index where
-    it is found, or -1 if the newline could not be found. Will throw an erro
-    if a bare CR is encountered.
-    """
-    lf_index = _bytes.find(_LF)
-    cr_index = _bytes.find(_CR)
-    has_lf = bool(~lf_index)
-    has_cr = bool(~cr_index)
-    if not has_lf and has_cr:
-        # Hold it...
-        if cr_index == len(_bytes) - 1:
-            # There could be an LF after the CR we found.
-            return -1
-        # It's a bare CR!
-        raise errors.NewlineError('Expected CRLF, received bare CR!')
-    if not has_lf:
-        # All newlines we accept have LF in them.
-        return -1
-
-    if newline_type == b'\n':
-        return lf_index
-
-    # We are expecting a CRLF.
-    if not has_cr:
-        # No CR, no CRLF.
-        return -1
-    return cr_index
-
-def is_newline(buf: bytedata.Bytes, newline_type: Literal[b'\n', b'\r\n']) -> Optional[bool]:
-    """Is the next byte or two of ``buf`` a newline?
-
-    Return None if there weren't enough bytes.
-    """
-    byte = buf.peek()
-    if byte is None:
-        return None
-    if byte == _LF and newline_type[0] == _LF:
-        buf.bump()
-        return True
-
-    if byte == _CR and newline_type[0] == _CR:
-        buf.bump()
-        next_byte = next(buf, None)
-        if next_byte is None:
-            return None
-        if next_byte != _LF:
-            raise errors.NewlineError(
-                'Expected CRLF, received bare CR.')
-        return True
-
-    return False
+    def startswith(
+        self, __prefix: Union[bytes, int],
+        __start: Optional[SupportsIndex] = ...,
+        __end: Optional[SupportsIndex] = ...
+    ) -> int: ...
 
 
 class NewlineType(Enum):
@@ -112,9 +67,47 @@ def startswith_newline(buf: bytes, allow_lf: bool) -> Optional[Tuple[bool, Newli
         # It's LF.
         return (True, NewlineType.LF)
 
-    if len(buf) < 1:
+    if buf_len < 1:
         # Incomplete.
         return None
 
     # No newline :(
     return (False, NewlineType.NONE)
+
+
+def find_newline(buf: HasFind, allow_lf: bool) -> Tuple[int, NewlineType]:
+    """
+    Look for the a newline in ``buf``.
+
+    Return the index and type of newline that is found, or -1 if a newline could
+    not be found. Will throw an error if a bare CR is encountered.
+    """
+    buf_len = len(buf)
+
+    lf_index = buf.find(_LF)
+    cr_index = buf.find(_CR)
+    has_lf = bool(~lf_index)
+    has_cr = bool(~cr_index)
+
+    if not has_cr and not has_lf:
+        return (-1, NewlineType.NONE)
+
+    if has_cr:
+        if cr_index == buf_len - 1:
+            # There could be an LF after the CR we found.
+            return (-1, NewlineType.NONE)
+
+        if buf[cr_index + 1] != _LF:
+            raise errors.NewlineError('Expected CRLF, received bare CR!')
+
+        # It's CRLF
+        return (cr_index, NewlineType.CRLF)
+    if has_lf:
+        if not allow_lf:
+            raise errors.NewlineError('CRLF is required.')
+
+        # It's LF
+        return (lf_index, NewlineType.LF)
+
+    # Should be unreachable
+    return (-1, NewlineType.NONE)
