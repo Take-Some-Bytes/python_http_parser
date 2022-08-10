@@ -15,4 +15,4 @@ python_http_parser.egg-info
 docs/_build
 
 # Benchmark results
-bench_results*.log
+.benchmarks
