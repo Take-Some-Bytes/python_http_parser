@@ -34,7 +34,6 @@ jobs:
       - name: Lint RST
         run: |
           rstcheck ./**.rst
-          rstcheck ./docs/**.rst
       - name: Lint code
         run: |
           python -m pylint ./python_http_parser
@@ -49,11 +48,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [
-          3.7,
-          3.8,
-          3.9
-        ]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
       - name: Get repo.
