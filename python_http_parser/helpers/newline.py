@@ -1,34 +1,12 @@
 """Newline-related helper functions."""
 from enum import Enum
 
-from typing import Optional, Tuple, Union, Sized
-# Use typing_extensions to maintain compatibility.
-from typing_extensions import SupportsIndex, Protocol
+from typing import Optional, Tuple, Union
 
 from .. import errors
 
 _LF = 0x0a
 _CR = 0x0d
-
-class HasFind(Sized, Protocol):
-    """A type that has a .find() method."""
-    # pylint: disable=abstract-method,missing-function-docstring,too-few-public-methods
-
-    def find(
-        self, __sub: Union[bytes, int],
-        __start: Optional[SupportsIndex] = ...,
-        __end: Optional[SupportsIndex] = ...
-    ) -> int: ...
-
-class HasStartswith(Sized, Protocol):
-    """A type that has a .startswith() method."""
-    # pylint: disable=abstract-method,missing-function-docstring,too-few-public-methods
-
-    def startswith(
-        self, __prefix: Union[bytes, int],
-        __start: Optional[SupportsIndex] = ...,
-        __end: Optional[SupportsIndex] = ...
-    ) -> int: ...
 
 
 class NewlineType(Enum):
@@ -42,7 +20,7 @@ class NewlineType(Enum):
     NONE = 2
 
 
-def startswith_newline(buf: bytes, allow_lf: bool) -> Optional[Tuple[bool, NewlineType]]:
+def startswith_newline(buf: Union[bytes, bytearray], allow_lf: bool) -> Optional[Tuple[bool, NewlineType]]:
     """Does the buffer start with a newline?"""
     buf_len = len(buf)
 
@@ -75,7 +53,7 @@ def startswith_newline(buf: bytes, allow_lf: bool) -> Optional[Tuple[bool, Newli
     return (False, NewlineType.NONE)
 
 
-def find_newline(buf: HasFind, allow_lf: bool) -> Tuple[int, NewlineType]:
+def find_newline(buf: Union[bytes, bytearray], allow_lf: bool) -> Tuple[int, NewlineType]:
     """
     Look for the a newline in ``buf``.
 
