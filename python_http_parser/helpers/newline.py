@@ -20,7 +20,10 @@ class NewlineType(Enum):
     NONE = 2
 
 
-def startswith_newline(buf: Union[bytes, bytearray], allow_lf: bool) -> Optional[Tuple[bool, NewlineType]]:
+def startswith_newline(
+    buf: Union[bytes, bytearray],
+    allow_lf: bool
+) -> Optional[Tuple[bool, NewlineType]]:
     """Does the buffer start with a newline?"""
     buf_len = len(buf)
 
