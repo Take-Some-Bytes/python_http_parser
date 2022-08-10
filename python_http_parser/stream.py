@@ -352,6 +352,8 @@ class HTTPParser(EventEmitter):
                 self._state = ParserState.DONE
 
         if self._state is ParserState.PROCESSING_BODY:
+            if self._body_processor is None:
+                raise errors.BodyProcessorRequired()
             ret = self._body_processor.process(
                 buf, self.strictness != ParserStrictness.STRICT
             )
