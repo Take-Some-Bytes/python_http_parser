@@ -53,7 +53,6 @@ lint:
 	python -m pylint ./tests
 	python -m pylint ./python_http_parser
 	rstcheck $(wildcard ./*.rst)
-	rstcheck $(wildcard ./docs/*.rst)
 
 typecheck:
 	python -m mypy .
