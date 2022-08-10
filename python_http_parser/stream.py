@@ -315,6 +315,8 @@ class HTTPParser(EventEmitter):
         Contains the parser directing logic. All errors will be propagated
         back to the caller.
         """
+        # pylint: disable=R0912
+
         nparsed = 0
         if self.is_response and self._state in (
                 ParserState.PARSING_VERSION,
@@ -354,6 +356,7 @@ class HTTPParser(EventEmitter):
         if self._state is ParserState.PROCESSING_BODY:
             if self._body_processor is None:
                 raise errors.BodyProcessorRequired()
+
             ret = self._body_processor.process(
                 buf, self.strictness != ParserStrictness.STRICT
             )
