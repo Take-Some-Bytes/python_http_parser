@@ -2,6 +2,53 @@
 Data to benchmark with
 """
 
+from itertools import repeat
+
+
+CHUNKED = {
+    'short': b''.join([
+        b'10\r\n',
+        b'This is sixteen;\r\n'
+        b'3\r\n',
+        b'bye\r\n',
+        b'0\r\n',
+        b'\r\n'
+    ]),
+    'regular': b''.join([
+        b'b;this_be_extension=1\r\n',
+        b'\nNope, NOpe\r\n',
+        b'8;aaa=thisBeChunkExtension\r\n',
+        b', NOpity\r\n',
+        b'8\r\n',
+        b' nope. (\r\n',
+        b'd;nope=nope\r\n',
+        b'nope nope)Why\r\n',
+        b'0;lastchunk=1\r\n',
+        b'\r\n',
+    ]),
+    'long': b''.join([
+        b'b;this_be_extension=1\r\n',
+        b'\nNope, NOpe\r\n',
+        b'10\r\n',
+        b'This is sixteen;\r\n',
+        b'8;aaa=thisBeChunkExtension\r\n',
+        b', NOpity\r\n',
+        b'd;nope=nope\r\n',
+        b'nope nope)Why\r\n',
+        b'f;f=f\r\n',
+        b'1500000000000cd\r\n',
+        b'ce\r\n',
+        bytes(repeat(0x04, int('ce', 16))) + b'\r\n',
+        b'17\r\n'
+        b'GOOD MORNING VIETNAM!\r\n\r\n',
+        b'14\r\n',
+        b'Fridges for... days?\r\n',
+        b'0;lastchunk=yes;thisisthelasttimeicantalk=dontgoplase\r\n',
+        b'\r\n'
+    ])
+}
+
+
 REQUEST = {
     'short': b''.join([
         b'GET / HTTP/1.1\r\n',
