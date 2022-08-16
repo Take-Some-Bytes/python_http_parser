@@ -10,6 +10,10 @@ ifeq ($(DETECTED_OS),Windows)
     SHELL := powershell.exe
 endif
 
+PROFILE_ITERS ?= 100000
+PROFILE_API ?= stream_parser_req
+
+# Put this first for obvious reasons
 help:
 	@echo "Nothing specified, nothing done"
 	@echo "Available commands:"
@@ -48,6 +52,9 @@ test:
 
 bench:
 	python -m pytest bench
+
+profile:
+	python bench/run_profile.py -a $(PROFILE_API) -i $(PROFILE_ITERS)
 
 lint:
 	python -m pylint ./tests
