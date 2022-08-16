@@ -11,6 +11,11 @@ The format is based on `Keep a Changelog`_, and this project adheres to `Semanti
  Unreleased
 ------------
 
+~~~~~~~~
+ Added:
+~~~~~~~~
+- Added benchmarks for the ``ChunkedProcessor`` class.
+
 ~~~~~~~~~~
  Changed:
 ~~~~~~~~~~
