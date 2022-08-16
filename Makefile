@@ -23,6 +23,7 @@ help:
 	@echo "  - upload: upload build to PyPI"
 	@echo "  - test: run PyTest unit tests"
 	@echo "  - bench: run benchmarks, powered by pytest-benchmark"
+	@echo "  - profile: profile certain APIs"
 	@echo "  - lint: lint Python and ReStructureText files"
 	@echo "  - typecheck: perform typechecking using mypy"
 
