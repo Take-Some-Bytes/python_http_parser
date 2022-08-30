@@ -55,7 +55,7 @@ bench:
 	python -m pytest bench
 
 profile:
-	python bench/run_profile.py -a $(PROFILE_API) -i $(PROFILE_ITERS)
+	python -m bench -a $(PROFILE_API) -i $(PROFILE_ITERS)
 
 lint:
 	python -m pylint ./tests

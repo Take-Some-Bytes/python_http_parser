@@ -4,10 +4,9 @@ Profile the specified API.
 
 import argparse
 import cProfile
-import sys
 
-from context import python_http_parser
-from data import CHUNKED, REQUEST, RESPONSE
+from .context import python_http_parser
+from .data import CHUNKED, REQUEST, RESPONSE
 
 HTTPParser = python_http_parser.stream.HTTPParser
 ChunkedProcessor = python_http_parser.body.ChunkedProcessor
@@ -48,6 +47,7 @@ def main() -> int:
     args = argparser.parse_args()
 
     print(f'[INFO] Profiling API "{args.api}" with {args.iters} consecutive calls')
+    print()
 
     if args.api == 'stream_parser_req':
         parser = HTTPParser(is_response=False)
@@ -70,7 +70,7 @@ def main() -> int:
         data = CHUNKED['long']
         iters = args.iters
 
-        cProfile.run("""\
+        cProfile.runctx("""\
 while i < iters:
     p = ChunkedProcessor()
     p.process(data, True)
@@ -79,6 +79,3 @@ while i < iters:
 
     print('[INFO] Profile finished')
     return 0
-
-if __name__ == '__main__':
-    sys.exit(main())
