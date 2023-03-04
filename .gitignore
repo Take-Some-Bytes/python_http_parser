@@ -8,6 +8,7 @@ python_http_parser.egg-info
 .DS_STORE
 
 .vscode
+*.code-workspace
 
 .venv/
 
