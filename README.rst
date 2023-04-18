@@ -1,3 +1,9 @@
+======================================
+ THIS PACKAGE IS NO LONGER MAINTAINED
+======================================
+This project will soon be deleted and removed from PyPI. An new HTTP parser is under
+development. In the meantime, please find some other HTTP parser for Python.
+
 ========================
  ``python_http_parser``
 ========================
